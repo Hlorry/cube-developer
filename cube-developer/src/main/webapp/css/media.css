@@ -1,0 +1,812 @@
+@media screen and (max-width: 1600px) {
+    .carousel-inner > .item .carousel-caption-img h3, .carousel-inner > .item .carousel-caption-img h3 {
+        margin: 0 0 30px 0;
+        font-weight: normal;
+    }
+}
+
+@media screen and (max-width: 1601px) {
+    .carousel-caption.carousel-caption-img p img {
+
+    }
+
+}
+
+@media screen and (max-width: 1441px) {
+    .carousel-inner > .item h3, .carousel-inner > .item h3 {
+        margin: 50px 0 60px 0;
+    }
+
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 80%;
+    }
+}
+
+@media (max-width: 1336px) {
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 80%;
+    }
+
+    .carousel-inner > .item h3, .carousel-inner > .item h3 {
+        font-size: 20px;
+    }
+}
+
+@media screen and (max-width: 1281px) {
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 75%;
+    }
+}
+
+@media (max-width: 1210px)and(min-width: 1020px) {
+    .carousel-caption.carousel-caption-img p img {
+        max-height: 240px;
+    }
+}
+
+@media screen and (max-width: 1153px) {
+    .nav > li > a {
+        padding: 15px 20px;
+    }
+
+    .login_page .form-control {
+        max-width: inherit;
+    }
+
+    .login_page .btn-success {
+        max-width: inherit;
+    }
+
+    #myCarousel .carousel-caption h1 {
+        font-size: 20px;
+        font-weight: normal;
+    }
+
+    #myCarousel .carousel-caption h3 {
+        font-size: 16px;
+    }
+
+    .footer ul li div {
+        margin-right: 5px;
+    }
+
+    .footer .col-md-4 {
+        padding-left: 0px;
+        padding-right: 0px;
+        width: 33%;
+        float: left;
+    }
+
+    html {
+        padding-bottom: 0px;
+    }
+
+    footer {
+        position: inherit;
+        margin: 30px 0 0 0;
+    }
+
+    #myCarousel .register {
+        width: 100px;
+        font-size: 16px;
+        height: 40px;
+        line-height: 36px;
+        padding-top: 0px;
+        border-width: 2px;
+    }
+
+    .index_register {
+        margin-top: 10%;
+    }
+
+    .flick-content h3 {
+        font-size: 24px;
+    }
+
+    .flick-content .flick-sub-text {
+        font-size: 20px;
+    }
+
+}
+
+@media screen and (max-width: 994px) {
+    .nav > li > a {
+        padding: 15px 22px;
+
+    }
+
+    .navbar-default .navbar-nav > li > a {
+        font-size: 14px;
+    }
+
+    .navbar-form a {
+        font-size: 13px;
+    }
+
+    .product .col-md-3 img {
+        max-width: 100%;
+        max-height: 40px;
+    }
+
+    .footer .col-md-3 {
+        width: 33%;
+    }
+
+    .carousel-inner > .item h3, .carousel-inner > .item h3 {
+        margin: 30px 0;
+    }
+
+    .carousel-inner > .item .carousel-caption-img h3, .carousel-inner > .item .carousel-caption-img h3 {
+        margin: 0 0 20px 0;
+    }
+}
+
+@media screen and (max-width: 890px) {
+
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 65%;
+    }
+
+    .footer .row {
+        margin: 0px;
+    }
+
+    .footer .col-md-3 {
+        width: 33%;
+    }
+
+    .footer h3 {
+        max-width: 120px;
+    }
+
+    .footer .col-md-3 {
+        height: 240px;
+    }
+
+    .product .col-md-3 h3 {
+        font-size: 14px;
+    }
+
+    .product .col-md-3 img {
+        max-width: 100%;
+        max-height: 30px;
+    }
+
+    .product .col-md-3 p {
+        font-size: 12px;
+    }
+    .product_btn .register {
+        margin: 0 3%;
+    }
+}
+
+@media screen and (max-width: 766px) {
+    .nav .open > a, .nav .open > a:hover, .nav .open > a:focus {
+        border-top: none;
+    }
+
+    .navbar-nav .open .dropdown-menu {
+        position: absolute;
+        min-width: 100px;
+    }
+
+    .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+        color: #fff;
+        margin: 0px;
+    }
+
+    .navbar-nav .open .dropdown-menu {
+        background: #595959;
+    }
+
+    .navbar-default .navbar-nav > li > a {
+        font-size: 14px;
+    }
+
+    .navbar-form a {
+        font-size: 12px;
+    }
+
+    .login_page {
+        margin-top: 20px;
+    }
+
+    .navbar-header {
+        height: 45px;
+    }
+
+    .navbar-toggle {
+        margin-top: 12px;
+        padding: 5px;
+    }
+
+    .navbar-brand span {
+        line-height: 45px;
+    }
+
+    .navbar-brand span img {
+        width: 70%
+    }
+
+    .navbar-nav {
+        float: left;
+    }
+
+    .nav > li {
+        position: relative;
+        display: block;
+        float: left;
+    }
+
+    .navbar-default .navbar-form {
+        display: inline-block;
+        float: right;
+    }
+
+    .navbar-default a {
+        display: block;
+        margin: 10px auto;
+        float: left;
+    }
+
+    .navbar-default .navbar-nav > li > a {
+        border-top: 0px;
+        height: 45px;
+        line-height: 45px;
+        padding: 0 5px;
+    }
+
+    .navbar-default .navbar-nav > .active > a {
+        border-top: 0px;
+        color: #f15a5a;
+    }
+
+    .navbar-default .navbar-form {
+        margin-top: 14px;
+    }
+
+    /**banner*/
+    #myCarousel.carousel {
+        margin-top: 50px;
+    }
+
+    .navbar-collapse {
+        padding-right: 5px;
+    }
+
+    #myCarousel .carousel-caption h1 {
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+    #myCarousel .carousel-caption h3 {
+        font-size: 12px;
+    }
+
+    .carousel-caption.carousel-caption-img {
+        top: 15%;
+    }
+
+    .carousel-caption.carousel-caption-img p {
+        margin-bottom: 0px;
+    }
+
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 100%;
+    }
+
+    .carousel-caption.carousel-caption-img h3 img {
+        height: 15px;
+    }
+
+    .carousel-caption.carousel-caption-img {
+
+        bottom: inherit;
+        padding: 0px;
+    }
+
+    #myCarousel .register {
+        width: 80px;
+        font-size: 14px;
+        height: 30px;
+        line-height: 28px;
+        padding-top: 0px;
+        border-width: 1px;
+    }
+
+    .carousel-caption {
+        padding: 0px;
+        width: 80%;
+        left: 10%;
+        top: 20%;
+        /*     top: inherit;
+             bottom: 20px;*/
+    }
+
+    .carousel-control {
+        width: 10%;
+    }
+
+    .carousel-indicators {
+        bottom: 2px;
+    }
+
+    .carousel-caption.carousel-caption-img h3 {
+        margin: 0px;
+    }
+
+    .carousel-inner > .item > img {
+        max-width: inherit;
+        max-height: 300px;
+
+    }
+
+    .product_banner {
+        margin-top: 50px;
+    }
+
+    .product_banner img {
+        min-width: 100%;
+
+    }
+
+    .carousel-inner > .item h3, .carousel-inner > .item h3 {
+        margin: 10px;
+        white-space: normal;
+    }
+
+    .carousel-inner > .item .carousel-caption-img h3, .carousel-inner > .item .carousel-caption-img h3 {
+        margin: 0px;
+    }
+
+    .featurette .col-md-12 h2 {
+        font-size: 20px;
+    }
+
+    .featurette .col-md-12 img {
+        width: 80%;
+    }
+
+    .introduce .featurette img {
+        width: 80%;
+    }
+
+    .add_box {
+        width: 100%;
+        bottom: 0px;
+    }
+
+    .add_app {
+        height: 60px;
+        padding-top: 20px;
+    }
+
+    .list_bg {
+        background: none;
+    }
+
+    .list_bg img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .casepage {
+        position: relative;
+        padding-bottom: 70px;
+    }
+
+    .product .col-md-3 {
+        text-align: center;
+    }
+
+    .introduce .featurette .col-md-5, .introduce .featurette .col-md-7 {
+        margin-bottom: 20px;
+    }
+
+    .introduce .featurette.row {
+        margin: 0px;
+    }
+
+    .footer {
+        padding: 0 10px;
+        margin-top: 20px;
+
+    }
+
+    .footer .col-md-4 {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .footer ul li {
+        margin-right: 10px;
+    }
+
+    .footer ul li div {
+        margin-right: 1px;
+    }
+
+    .footer ul li a img {
+        max-width: 100%;
+    }
+
+    .footer ul li {
+        font-size: 12px;
+        float: left;
+    }
+
+    .footer ul li div {
+    }
+
+    .footer_email {
+        max-width: 60px;
+    }
+
+    .footer h3 {
+        max-width: 100%;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+    }
+
+    .menu_padding.about {
+        padding-top: 0px;
+    }
+
+    .footer_contact ul li {
+        width: 33%;
+        margin-right: 0;
+    }
+
+    .footer_email p {
+        word-break: break-all;
+        display: block;
+    }
+
+    .navbar-offcanvas .dropdown-menu {
+        min-height: 100px;
+        text-align: center;
+
+    }
+
+    .footer .col-md-3 {
+        height: 280px;
+    }
+
+    .footer .col-md-3.footer_last {
+        height: inherit;
+    }
+
+    .navbar-hide {
+        display: block;
+    }
+
+    .footer h3 {
+        border-width: 1px;
+        font-weight: bold;
+    }
+
+    .navbar-default {
+        background: #333;
+    }
+
+    .navbar-form {
+        padding: 0px;
+    }
+
+    .navbar-default a {
+        display: block;
+        text-align: center;
+        margin: 0 2px;
+
+    }
+
+    .navbar-form a {
+        background-image: none;
+        background-color: #707070;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        width: 60px;
+
+    }
+
+    .navbar-collapse.in {
+        overflow: inherit;
+    }
+
+    .dropdown-menu {
+        right: 20%;
+    }
+
+    /**文档**/
+    #fileBlock {
+        display: block;
+    }
+
+    #tab_menu {
+        position: relative;
+    }
+
+    .file_box {
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #ccc;
+        max-height: 200px;
+        width: 100%;
+        padding: 10px;
+        overflow: scroll;
+    }
+
+    #tab_box {
+        margin-top: 10px;
+    }
+
+    .file_tab.login_page {
+        margin-top: 10px;
+    }
+
+    #tab_box h3 {
+        text-align: center;
+    }
+
+    .tabs-list li a {
+        padding: 0 10px
+    }
+
+    .casepage .tabs-vertical-left .tabs-container {
+        width: 100%;
+    }
+
+    .case_footer {
+        line-height: 24px;
+    }
+
+    .download_padding {
+        margin-top: 0px;
+    }
+
+    .knowledge_box .btn-success {
+        margin-top: 10px;
+    }
+
+    .about .tabs-vertical-left .tabs-container, .about .tabs-vertical-right .tabs-container {
+        width: 100%;
+    }
+
+    .about_contact img {
+        margin-right: 5px;
+    }
+
+    .about_contact span {
+        padding-left: 10px;
+    }
+
+    .tabs-vertical-left .tabs-container .tab-content.about_contact h3 {
+        margin-bottom: 20px;
+    }
+
+    .about_img {
+        margin-top: 20px;
+    }
+
+    .product .row {
+        overflow: hidden;
+    }
+
+    .about .tabs-vertical-left .tabs-container .about_contact img {
+        width: 30px;
+    }
+
+    .introduce .col-md-5 p {
+        font-size: 14px;
+    }
+
+    .product_banner img {
+        max-width: 100%;
+    }
+
+    .product_banner .flick-inner {
+        top: 0%;
+
+    }
+
+    .flick-content h3, .flick-content .flick-sub-text {
+        margin: 5% 0 4% 0;
+        letter-spacing: inherit;
+    }
+
+    .flick-content h3 {
+        font-size: 16px;
+    }
+
+    .flick-content .register {
+        height: 30px;
+        line-height: 28px;
+        width: 100px;
+        font-size: 14px;
+        border-width: 1px;
+        margin-top: 0px;
+    }
+
+    .flick-content .flick-sub-text {
+        font-size: 14px;
+    }
+
+    .login_page .control-label {
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .login_page .form-horizontal .form-group {
+        margin-bottom: 20px;
+    }
+
+    .register_step li {
+        width: 28%;
+    }
+
+    .enterprise_progress .register_step li {
+        width: 22%;
+    }
+
+    .register_step li b {
+        margin-right: -12%;
+    }
+
+    .register_step li.step1 b {
+        margin-right: -15%;
+    }
+
+    .register_step li.step_last b {
+        margin-right: 0px;
+    }
+
+    .case_footer p {
+        padding: 10px 0;
+    }
+
+    .part2, .part2 .scroll_item {
+        height: auto;
+    }
+
+    .scroll_item {
+        height: auto;
+        position: inherit;
+    }
+}
+
+@media screen and (max-width: 721px) {
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 65%;
+    }
+}
+
+@media screen and (max-width: 684px) {
+    .carousel-caption.carousel-caption-img {
+        top: 15%;
+    }
+
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 65%;
+    }
+}
+
+@media screen and (max-width: 641px) {
+    .carousel-caption {
+        top: 22%;
+    }
+}
+
+@media screen and (max-width: 610px) {
+    /**banner*/
+    #myCarousel.carousel {
+        margin-top: 45px;
+    }
+
+    #myCarousel .carousel-caption h1 {
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+    #myCarousel .carousel-caption h3 {
+        font-size: 12px;
+    }
+
+    .carousel-caption.carousel-caption-img p img {
+
+    }
+
+    #myCarousel .register {
+        width: 80px;
+        font-size: 14px;
+        height: 30px;
+        line-height: 30px;
+        padding-top: 0px;
+    }
+
+    .carousel-caption.carousel-caption-img {
+
+        bottom: inherit;
+        padding: 0px;
+    }
+
+    .carousel-caption.carousel-caption-img h3 {
+        margin: 0px;
+    }
+
+    /**产品页**/
+    .introduce .col-md-5 h2 {
+        margin: 20px 0;
+        font-size: 20px;
+    }
+
+    .tabs-vertical-left .tabs-container .tab-content {
+        margin: 0px;
+    }
+
+    .file_tab.casepage {
+        margin-bottom: 40px;
+    }
+
+    .product .col-xs-6.col-md-3 {
+        width: 45%;
+    }
+
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 100%;
+    }
+
+    .carousel-caption.carousel-caption-img {
+        top: 8%;
+    }
+
+    .carousel-caption {
+        top: 30%;
+    }
+}
+
+@media screen and (max-width: 581px) {
+    .product .col-xs-6.col-md-3 {
+        width: 47%;
+    }
+}
+
+@media screen and (max-width: 541px) {
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 80%;
+    }
+
+    .product .col-xs-6.col-md-3 {
+        width: 50%;
+    }
+    .flick-content .register{
+        width:80px;
+
+    }
+    .product_btn .register {
+        margin: 0 2%;
+    }
+
+}
+
+@media screen and (max-width: 425px) {
+    .carousel-caption {
+        top: 34%;
+    }
+    .carousel-caption.carousel-caption-img p img {
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 341px) {
+    .product .col-xs-6.col-md-3 {
+        width: 100%;
+    }
+
+    .flick-content h3, .flick-content .flick-sub-text {
+        margin: 5% 0 2% 0;
+        letter-spacing: inherit;
+    }
+}

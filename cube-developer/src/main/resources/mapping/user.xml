@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.getcube.develop.dao.developes.UserDao">
+
+    <select id="queryUser" resultType="userEntity" parameterType="userEntity">
+        SELECT id, name, password, email, phone, usertype, way, create_time, update_time, activation,
+        biz_verify, phone_verify, avatar FROM
+        d_user_password WHERE 1=1
+        <if test="id != null and id != 0">
+            and id = #{id}
+        </if>
+        <if test="email != null and email != ''">
+            and email = #{email}
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+        <if test="name != null and name != ''">
+            and name = #{name}
+        </if>
+        <if test="avatar != null and avatar != ''">
+            and avatar = #{avatar}
+        </if>
+    </select>
+
+    <!--添加用户-->
+    <insert id="addUser" parameterType="userEntity" useGeneratedKeys="true">
+        INSERT INTO d_user_password (name, password, email, usertype, way, create_time, update_time, activation,
+        biz_verify, phone_verify)
+        VALUE (#{name}, #{password}, #{email}, #{usertype}, #{way}, #{create_time}, #{update_time},
+        #{activation}, #{biz_verify}, #{phone_verify})
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            select LAST_INSERT_ID() AS userid
+        </selectKey>
+    </insert>
+
+    <update id="updateUser" parameterType="userEntity">
+        UPDATE d_user_password SET update_time = #{update_time}
+        <if test="activation != null">
+            ,activation = #{activation}
+        </if>
+        <if test="password != null">
+            ,password = #{password}
+        </if>
+        <if test="name != null">
+            ,name = #{name}
+        </if>
+        <if test="phone != null">
+            ,phone = #{phone}
+        </if>
+        <if test="biz_verify != null">
+            ,biz_verify = 1
+        </if>
+        <if test="phone_verify != null">
+            ,phone_verify = 1
+        </if>
+        <if test="avatar != null">
+            ,avatar = #{avatar}
+        </if>
+        WHERE id = #{id}
+
+    </update>
+
+    <select id="login" parameterType="userEntity" resultType="userEntity">
+        select * from d_user_password
+        <where>
+            <choose>
+                <when test="email != null">
+                    email = #{email} and password = #{password}
+                </when>
+                <otherwise>
+                    phone = #{phone} and password = #{password}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>
