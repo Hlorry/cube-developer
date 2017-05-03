@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.2.xsd"
+       default-lazy-init="true"
+       default-autowire="byName">
+
+    <description>Spring public settings</description>
+
+    <context:property-placeholder ignore-resource-not-found="true"
+                                  location="classpath:mysql.properties,classpath:redis.properties"/>
+    <context:annotation-config/>
+    <context:component-scan base-package="cn.getcube.develop.*"/>
+
+    <!-- Spring quartz -->
+    <bean id="stdScheduler" lazy-init="false" autowire="no"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean"/>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:mysql.properties"/>
+    </bean>
+
+    <import resource="classpath*:developesDatabase.xml" />
+    <import resource="classpath*:cubeDatabase.xml" />
+
+
+    <bean id="jedisCluster" class="redis.clients.jedis.JedisCluster">
+        <constructor-arg index="0">
+        <set>
+        <bean class="redis.clients.jedis.HostAndPort">
+        <constructor-arg index="0" value="${redis.host}" />
+        <constructor-arg index="1" value="7000" type="int" />
+    </bean>
+        <bean class="redis.clients.jedis.HostAndPort">
+        <constructor-arg index="0" value="${redis.host}" />
+        <constructor-arg index="1" value="7001" type="int" />
+    </bean>
+        <bean class="redis.clients.jedis.HostAndPort">
+        <constructor-arg index="0" value="${redis.host}" />
+        <constructor-arg index="1" value="7002" type="int" />
+    </bean>
+        <bean class="redis.clients.jedis.HostAndPort">
+        <constructor-arg index="0" value="${redis.host}" />
+        <constructor-arg index="1" value="7003" type="int" />
+    </bean>
+        <bean class="redis.clients.jedis.HostAndPort">
+        <constructor-arg index="0" value="${redis.host}" />
+        <constructor-arg index="1" value="7004" type="int" />
+    </bean>
+        <bean class="redis.clients.jedis.HostAndPort">
+        <constructor-arg index="0" value="${redis.host}" />
+        <constructor-arg index="1" value="7005" type="int" />
+    </bean>
+    </set>
+    </constructor-arg>
+        <constructor-arg index="1" value="15000" type="int" />
+        <!--<constructor-arg index="2" ref="jedisPoolConfig" />-->
+    </bean>
+
+
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true"/>
+
+    <!-- dao 接口注入-->
+    <bean id="userDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
+          p:mapperInterface="cn.getcube.develop.dao.developes.UserDao"/>
+
+    <bean id="certifiedDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
+          p:mapperInterface="cn.getcube.develop.dao.developes.CertifiedDao"/>
+
+    <bean id="appDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
+          p:mapperInterface="cn.getcube.develop.dao.developes.AppDao"/>
+
+    <!-- ====================== Additional Resources ======================= -->
+
+
+
+</beans>
