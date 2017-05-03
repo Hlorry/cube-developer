@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.getcube.develop.dao.cube.LoginLogDao">
+    <!-- 根据app_id查询得到一个应用对象-->
+    <!-- <select id="queryInterval" resultType="cn.getcube.develop.entity.LoginLog" parameterType="int">
+        select * from login_log where cube IN
+        <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+ -->
+ 
+ <select id="queryInterval" resultType="cn.getcube.develop.entity.LoginLog" parameterType="cn.getcube.develop.para.LoginLogPara">
+        select * from login_log 
+        <if test="cubes!=null and cubes.size()>0">
+       			where
+	         <foreach collection="cubes" item="item" separator="or">
+	           	(cube  between #{item.start} and #{item.end})
+	        </foreach>
+        </if>    
+    </select>
+ 
+</mapper>
