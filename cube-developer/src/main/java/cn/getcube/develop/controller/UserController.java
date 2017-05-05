@@ -5,6 +5,7 @@ import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
+import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.FileUploadUtils;
 import cn.getcube.develop.utils.MD5;
 import com.alibaba.fastjson.JSON;
@@ -27,6 +28,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by SubDong on 2016/3/8.
@@ -49,19 +52,40 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public ModelAndView product(HttpServletRequest request, HttpServletResponse response,
-                                @RequestParam(name = "name", required = true) String name,
-                                @RequestParam(name = "account", required = true) String account,
-                                @RequestParam(name = "password", required = true) String password,
-                                @RequestParam(name = "phone", required = true) String phone,
-                                @RequestParam(name = "userType", required = true) Integer userType,
-                                @RequestParam(name = "way", required = true) Integer way) {
+    public DataResult<UserEntity> product(HttpServletRequest request, HttpServletResponse response,
+                               @RequestParam(name = "name", required = true) String name,
+                               @RequestParam(name = "account", required = true) String account,
+                               @RequestParam(name = "password", required = true) String password,
+                               @RequestParam(name = "userType", required = true) Integer userType,
+                               @RequestParam(name = "way", required = true) Integer way) {
+        DataResult<UserEntity> result = new DataResult<>();
         AbstractView jsonView = new MappingJackson2JsonView();
         if (name != null && account != null && password != null && userType != null && way != null) {
 
             UserEntity userEntity = new UserEntity();
             userEntity.setName(name);
-            userEntity.setEmail(account);
+
+            if(account.indexOf("@") != -1){
+                userEntity.setEmail(account);
+                //邮箱验证
+                Pattern pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$");
+                Matcher matcher = pattern.matcher(userEntity.getEmail());
+                if (!matcher.matches()) {
+//                    return result(StateCode.AUTH_ERROR_10004.getCode(),AuthConstants.FORMAT_ERROR);
+                }
+            }
+
+
+
+            //手机号验证
+            Pattern p = Pattern.compile("^1[3|5|7|8]{1}[0-9]{9}$");
+            Matcher m = p.matcher(userEntity.getPhone());
+            if (!m.matches()) {
+//                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10001);
+//                map.put(AuthConstants.AUTH_ERRMSG, "phone format error");
+//                return map;
+            }
+
             //MD5加密
             MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
             userEntity.setPassword(md5.getMD5());
@@ -75,7 +99,7 @@ public class UserController {
             Map<String, Object> addUser = userService.addUser(userEntity, HttpUriCode.HTTP_CODE_URI);
             jsonView.setAttributesMap(addUser);
         }
-        return new ModelAndView(jsonView);
+        return result;
     }
 
     /**
