@@ -75,6 +75,12 @@
     <bean id="appDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
           p:mapperInterface="cn.getcube.develop.dao.developes.AppDao"/>
 
+    <bean id="nodeDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
+          p:mapperInterface="cn.getcube.develop.dao.developes.NodeDao"/>
+
+    <bean id="LoginLogDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
+          p:mapperInterface="cn.getcube.develop.dao.cube.LoginLogDao" />
+
     <!-- ====================== Additional Resources ======================= -->
 
 

@@ -8,6 +8,7 @@ import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.para.AppInfo;
 import cn.getcube.develop.para.AppPara;
+import cn.getcube.develop.service.AppCacheService;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.utils.Md5Helper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +31,12 @@ public class AppServiceImpl implements AppService {
     @Resource
     private UserDao userDao;
 
-    @Autowired
+    @Resource
     private NodeDao nodeDao;
     
-    @Autowired
-    private AppCacheServiceImpl appCache;
+    @Resource
+    private AppCacheService appCache;
+
     @Override
     public AppEntity queryApp(AppPara appPara) {
         return appDao.queryAppByAppId(appPara);
@@ -51,7 +53,7 @@ public class AppServiceImpl implements AppService {
         return appEntities;
     }
 
-    @Transactional
+    @Transactional("transactionManager")
     public Map<String, String> createApp(AppPara appPara) {
         Map<String, String> map = new HashMap<>();
         
