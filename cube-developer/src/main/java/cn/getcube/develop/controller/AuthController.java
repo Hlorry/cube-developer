@@ -185,11 +185,35 @@ public class AuthController {
      * @param version
      * @return
      */
-    @RequestMapping(value = "/activation", method = {RequestMethod.POST, RequestMethod.GET})
+    @RequestMapping(value = "/email/activation", method = {RequestMethod.POST, RequestMethod.GET})
     public BaseResult activation(@RequestParam(name = "actmd5", required = true) String actmd5,
                                  @RequestParam(name = "version", required = false) String version) {
         String value = jc.get(actmd5);
         if (value != null && actmd5.length() == 32) {
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(Integer.valueOf(value));
+            userEntity.setUpdate_time(new Date());
+            userEntity.setActivation(1);
+            int updateUser = userDao.updateUser(userEntity);
+            if (updateUser > 0) {
+                //删除验证reidskey
+                jc.del(actmd5);
+                return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+            } else {
+                return BaseResult.build(StateCode.AUTH_ERROR_10021, "用户不存在");
+            }
+        } else if (Objects.isNull(value)) {
+            return BaseResult.build(StateCode.AUTH_ERROR_10012, "Verify expired!");
+        } else {
+            return BaseResult.build(StateCode.AUTH_ERROR_10000, "无权限使用");
+        }
+    }
+
+    @RequestMapping(value = "/phone/activation", method = {RequestMethod.POST, RequestMethod.GET})
+    public BaseResult phoneActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
+                                 @RequestParam(name = "version", required = false) String version) {
+        String value = jc.get(actmd5);
+        if (value != null && actmd5.length() == 6) {
             UserEntity userEntity = new UserEntity();
             userEntity.setId(Integer.valueOf(value));
             userEntity.setUpdate_time(new Date());

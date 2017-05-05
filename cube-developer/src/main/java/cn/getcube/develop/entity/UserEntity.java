@@ -37,7 +37,7 @@ public class UserEntity {
     /**
      * 了解途径
      */
-    private Integer way;
+    private Integer way = 1;
 
     /**
      * 创建时间
@@ -52,18 +52,18 @@ public class UserEntity {
     /**
      * 账号是否激活（0.未激活  1.激活）
      */
-    private Integer activation;
+    private Integer activation = 0;
 
     /**
      * 企业认证
      * （0.未认证 1.已认证）
      */
-    private Integer biz_verify;
+    private Integer biz_verify = 0;
 
     /**
      * 手机号认证
      */
-    private Integer phone_verify;
+    private Integer phone_verify = 0;
 
     /**
      *

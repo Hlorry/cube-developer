@@ -3,12 +3,9 @@ package cn.getcube.develop.utils;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.EmailConstants;
 import cn.getcube.develop.HttpUriCode;
-import cn.getcube.develop.StateCode;
-import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.UserEntity;
 import redis.clients.jedis.JedisCluster;
 
-import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -21,18 +18,13 @@ import java.util.Objects;
  */
 public class MessageUtils {
     private final static MessageUtils instance = new MessageUtils();
-    @Resource
-    private UserDao userDao;
 
     public final static MessageUtils getInstance() {
         return MessageUtils.instance;
     }
 
-    public boolean sendEmailOrPhone(JedisCluster jc, String emailOrPhone) {
-        UserEntity userEntity = new UserEntity();
+    public boolean sendEmailOrPhone(JedisCluster jc, String emailOrPhone,UserEntity user) {
         if (emailOrPhone.contains("@")) {
-            userEntity.setEmail(emailOrPhone);
-            UserEntity user = userDao.queryUser(userEntity);
             if (Objects.nonNull(user)) {
                 //发送Email 验证
                 //MD5去重算法生成mail验证
@@ -46,7 +38,7 @@ public class MessageUtils {
                 return false;
             }
         } else {
-            SendMSMUtils.postRequest(userEntity.getPhone(), null);
+            SendMSMUtils.postRequest(user.getPhone(), null);
             return true;
         }
     }

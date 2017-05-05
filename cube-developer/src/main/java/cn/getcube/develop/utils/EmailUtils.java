@@ -1,10 +1,10 @@
 package cn.getcube.develop.utils;
 
-import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.Random;
 
@@ -13,7 +13,7 @@ import java.util.Random;
  */
 public class EmailUtils {
 
-    private static final String CHARSET_UTF_8 = "UTF-8";
+    private static final String CHARSET_UTF_8 = "utf-8";
 
     private static String hostName;     // 邮件服务器
     private static String from;         // 邮件发送者
@@ -51,14 +51,25 @@ public class EmailUtils {
         email.setCharset(CHARSET_UTF_8);
         email.setStartTLSEnabled(true);
         try {
-            email.setFrom(userName, from);
+            email.setFrom(userName, changeCharSet(from, "GB18030"));
             email.setSubject(subject);
             email.setHtmlMsg(msg);
             email.addTo(targetEmail);
             email.send();
-        } catch (EmailException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static String changeCharSet(
+            String str, String newCharset) throws UnsupportedEncodingException {
+        if (str != null) {
+            // 用默认字符编码解码字符串。
+            byte[] bs = str.getBytes();
+            // 用新的字符编码生成字符串
+            return new String(bs, newCharset);
+        }
+        return str;
     }
 
 

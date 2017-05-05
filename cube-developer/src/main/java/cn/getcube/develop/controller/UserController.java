@@ -5,10 +5,9 @@ import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
-import cn.getcube.develop.utils.DataResult;
-import cn.getcube.develop.utils.FileUploadUtils;
-import cn.getcube.develop.utils.MD5;
+import cn.getcube.develop.utils.*;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,10 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by SubDong on 2016/3/8.
@@ -57,49 +53,58 @@ public class UserController {
                                @RequestParam(name = "account", required = true) String account,
                                @RequestParam(name = "password", required = true) String password,
                                @RequestParam(name = "userType", required = true) Integer userType,
-                               @RequestParam(name = "way", required = true) Integer way) {
+                               @RequestParam(name = "way", required = false) Integer way) {
         DataResult<UserEntity> result = new DataResult<>();
-        AbstractView jsonView = new MappingJackson2JsonView();
-        if (name != null && account != null && password != null && userType != null && way != null) {
+        if (name != null && account != null && password != null && userType != null) {
 
             UserEntity userEntity = new UserEntity();
-            userEntity.setName(name);
 
             if(account.indexOf("@") != -1){
                 userEntity.setEmail(account);
                 //邮箱验证
-                Pattern pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$");
-                Matcher matcher = pattern.matcher(userEntity.getEmail());
-                if (!matcher.matches()) {
-//                    return result(StateCode.AUTH_ERROR_10004.getCode(),AuthConstants.FORMAT_ERROR);
+                if (!RegexUtil.isEmail(userEntity.getEmail())) {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(),AuthConstants.FORMAT_ERROR);
                 }
-            }
+                UserEntity param = new UserEntity();
+                param.setEmail(account);
+                UserEntity  user = userService.queryUser(param);
+                if(user != null){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(),AuthConstants.EMAIL_EXISTS);
+                }
+            }else {
+                userEntity.setPhone(account);
+                if (!RegexUtil.checkMobile(userEntity.getPhone())) {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(),AuthConstants.PHONE_FORMAT_ERROR);
+                }
 
-
-
-            //手机号验证
-            Pattern p = Pattern.compile("^1[3|5|7|8]{1}[0-9]{9}$");
-            Matcher m = p.matcher(userEntity.getPhone());
-            if (!m.matches()) {
-//                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10001);
-//                map.put(AuthConstants.AUTH_ERRMSG, "phone format error");
-//                return map;
+                UserEntity param = new UserEntity();
+                param.setPhone(account);
+                UserEntity  user = userService.queryUser(param);
+                if(user != null){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(),AuthConstants.PHONE_EXISTS);
+                }
             }
 
             //MD5加密
             MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
+            userEntity.setName(name);
             userEntity.setPassword(md5.getMD5());
-//            userEntity.setPhone(phone);
             userEntity.setUsertype(userType);
-            userEntity.setWay(way);
+            if(way != null){
+                userEntity.setWay(way);
+            }
+            userEntity.setCreate_time(new Date());
+            userEntity.setUpdate_time(new Date());
 
-            //获取uri 邮箱验证时用户访问页面
-            //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-
-            Map<String, Object> addUser = userService.addUser(userEntity, HttpUriCode.HTTP_CODE_URI);
-            jsonView.setAttributesMap(addUser);
+            try {
+                userService.addUser(userEntity);
+               MessageUtils.getInstance().sendEmailOrPhone(jc,account,userEntity);
+                return new DataResult<>(userEntity);
+            } catch (Exception e) {
+                return new DataResult<>(StateCode.AUTH_ERROR_10009,AuthConstants.REGISTER_ERROR);
+            }
         }
-        return result;
+       return new DataResult<>(StateCode.AUTH_ERROR_10009,AuthConstants.REGISTER_ERROR);
     }
 
     /**
@@ -108,7 +113,7 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    public ModelAndView product(HttpServletRequest request, HttpServletResponse response,
+    public DataResult<UserEntity> product(HttpServletRequest request, HttpServletResponse response,
                                 @RequestParam(name = "token", required = false) String token,
                                 @RequestParam(name = "version", required = false) String version,
                                 @RequestParam(name = "id", required = false) Integer id,
@@ -123,7 +128,7 @@ public class UserController {
                 map.put(AuthConstants.DESC, "token become invalid");
                 map.put("token", token);
                 jsonView.setAttributesMap(map);
-                return new ModelAndView(jsonView);
+                return new DataResult<>();
             }
         }
 
@@ -141,13 +146,13 @@ public class UserController {
             map.put(AuthConstants.DESC, "no such check information");
 
             jsonView.setAttributesMap(map);
-            return new ModelAndView(jsonView);
+            return new DataResult<>();
         }
         if (user.getAvatar() != null) user.setAvatar(HttpUriCode.HTTP_CODE_URI + user.getAvatar());
         map.put("cube", user);
 
         jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        return new DataResult<>();
 
     }
 
@@ -157,26 +162,19 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ModelAndView signin(HttpServletRequest request, HttpServletResponse response,
+    public DataResult<JSONObject> signin(HttpServletRequest request, HttpServletResponse response,
                                @RequestParam(name = "version", required = false) String version,
                                @RequestParam(name = "targetUrl", required = false) String targetUrl,
-                               @RequestParam(name = "username", required = false) String username,
-                               @RequestParam(name = "password", required = false) String password) throws UnsupportedEncodingException {
-        AbstractView jsonView = new MappingJackson2JsonView();
-        Map<String, Object> map = new HashMap<>();
+                               @RequestParam(name = "username", required = true) String username,
+                               @RequestParam(name = "password", required = true) String password) throws UnsupportedEncodingException {
+//        Map<String, Object> map = new HashMap<>();
         UserEntity userEntity = new UserEntity();
         if (username == null || username.isEmpty()) {
-            map.put("target", "username");
-            map.put("err", "用户名不能为空");
-            jsonView.setAttributesMap(map);
-            return new ModelAndView(jsonView);
+            return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(),AuthConstants.NULL_NAME);
         }
 
         if (password == null || password.isEmpty()) {
-            map.put("target", "password");
-            map.put("err", "密码不能为空");
-            jsonView.setAttributesMap(map);
-            return new ModelAndView(jsonView);
+            return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(),AuthConstants.NULL_PASSWORD);
         }
 
         if (username != null && username.indexOf("@") != -1) {
@@ -189,37 +187,33 @@ public class UserController {
         userEntity.setPassword(md5.getMD5());
         userEntity = userService.login(userEntity);
         if (userEntity == null) {
-            map.put("target", "username");
-            map.put("err", "用户名或密码错误");
+            return new DataResult<>(StateCode.AUTH_ERROR_10002.getCode(),AuthConstants.USER_PSD_ERROR);
         } else {
-            map.put("code", "0000");
-            map.put("data", targetUrl);
+//            map.put("code", "0000");
+//            map.put("data", targetUrl);
 
-//            jc.set("token", UUID.randomUUID().toString());
             String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            jc.set("token", uuid);
+
             jc.set(uuid, JSON.toJSONString(userEntity));
-            if (4 == userEntity.getUsertype()) {
-                map.put("code", "301");
-            }
-            map.put("token", uuid);
-            Cookie cookie = new Cookie("cube_develops_token", uuid);
-            Cookie cookie1 = new Cookie("cube_develops_userId", userEntity.getId() + "");
-            Cookie cookie2 = new Cookie("cube_develops_userName", URLEncoder.encode(userEntity.getName(), "UTF-8"));
-            Cookie cookie3 = new Cookie("cube_develops_activation", userEntity.getActivation() + "");
-            setCookie(response, cookie);
-            setCookie(response, cookie1);
-            setCookie(response, cookie2);
-            setCookie(response, cookie3);
+//            if (4 == userEntity.getUsertype()) {
+//                map.put("code", "301");
+//            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("token",uuid);
+            jsonObject.put("user",userEntity);
+
+            DataResult<JSONObject> dataResult = new DataResult<>();
+            dataResult.setData(jsonObject);
+            dataResult.setCode(StateCode.Ok.getCode());
+            dataResult.setDesc(AuthConstants.MSG_OK);
+
+            return dataResult;
+
         }
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+
     }
 
-    private void setCookie(HttpServletResponse response, Cookie cookie) {
-        cookie.setMaxAge(3600);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-    }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public ModelAndView logout(HttpServletRequest request, HttpServletResponse response,
