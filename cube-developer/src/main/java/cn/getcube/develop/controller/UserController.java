@@ -36,11 +36,9 @@ import java.util.*;
 public class UserController {
 
     @Resource
-    private UserService userService;
-
-    @Resource
     JedisCluster jc;
-
+    @Resource
+    private UserService userService;
 
     /**
      * 注册账号
@@ -49,39 +47,39 @@ public class UserController {
      */
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public DataResult<UserEntity> product(HttpServletRequest request, HttpServletResponse response,
-                               @RequestParam(name = "name", required = true) String name,
-                               @RequestParam(name = "account", required = true) String account,
-                               @RequestParam(name = "password", required = true) String password,
-                               @RequestParam(name = "userType", required = true) Integer userType,
-                               @RequestParam(name = "way", required = false) Integer way) {
+                                          @RequestParam(name = "name", required = true) String name,
+                                          @RequestParam(name = "account", required = true) String account,
+                                          @RequestParam(name = "password", required = true) String password,
+                                          @RequestParam(name = "userType", required = true) Integer userType,
+                                          @RequestParam(name = "way", required = false) Integer way) {
         DataResult<UserEntity> result = new DataResult<>();
         if (name != null && account != null && password != null && userType != null) {
 
             UserEntity userEntity = new UserEntity();
 
-            if(account.indexOf("@") != -1){
+            if (account.contains("@")) {
                 userEntity.setEmail(account);
                 //邮箱验证
                 if (!RegexUtil.isEmail(userEntity.getEmail())) {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(),AuthConstants.FORMAT_ERROR);
+                    return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(), AuthConstants.FORMAT_ERROR);
                 }
                 UserEntity param = new UserEntity();
                 param.setEmail(account);
-                UserEntity  user = userService.queryUser(param);
-                if(user != null){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(),AuthConstants.EMAIL_EXISTS);
+                UserEntity user = userService.queryUser(param);
+                if (user != null) {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(), AuthConstants.EMAIL_EXISTS);
                 }
-            }else {
+            } else {
                 userEntity.setPhone(account);
                 if (!RegexUtil.checkMobile(userEntity.getPhone())) {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(),AuthConstants.PHONE_FORMAT_ERROR);
+                    return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(), AuthConstants.PHONE_FORMAT_ERROR);
                 }
 
                 UserEntity param = new UserEntity();
                 param.setPhone(account);
-                UserEntity  user = userService.queryUser(param);
-                if(user != null){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(),AuthConstants.PHONE_EXISTS);
+                UserEntity user = userService.queryUser(param);
+                if (user != null) {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(), AuthConstants.PHONE_EXISTS);
                 }
             }
 
@@ -90,7 +88,7 @@ public class UserController {
             userEntity.setName(name);
             userEntity.setPassword(md5.getMD5());
             userEntity.setUsertype(userType);
-            if(way != null){
+            if (way != null) {
                 userEntity.setWay(way);
             }
             userEntity.setCreate_time(new Date());
@@ -98,13 +96,13 @@ public class UserController {
 
             try {
                 userService.addUser(userEntity);
-               MessageUtils.getInstance().sendEmailOrPhone(jc,account,userEntity);
+                MessageUtils.getInstance().sendEmailOrPhone(jc, account, userEntity);
                 return new DataResult<>(userEntity);
             } catch (Exception e) {
-                return new DataResult<>(StateCode.AUTH_ERROR_10009,AuthConstants.REGISTER_ERROR);
+                return new DataResult<>(StateCode.AUTH_ERROR_10009, AuthConstants.REGISTER_ERROR);
             }
         }
-       return new DataResult<>(StateCode.AUTH_ERROR_10009,AuthConstants.REGISTER_ERROR);
+        return new DataResult<>(StateCode.AUTH_ERROR_10009, AuthConstants.REGISTER_ERROR);
     }
 
     /**
@@ -114,12 +112,12 @@ public class UserController {
      */
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     public DataResult<UserEntity> product(HttpServletRequest request, HttpServletResponse response,
-                                @RequestParam(name = "token", required = false) String token,
-                                @RequestParam(name = "version", required = false) String version,
-                                @RequestParam(name = "id", required = false) Integer id,
-                                @RequestParam(name = "name", required = false) String name,
-                                @RequestParam(name = "email", required = false) String email,
-                                @RequestParam(name = "phone", required = false) String phone) {
+                                          @RequestParam(name = "token", required = false) String token,
+                                          @RequestParam(name = "version", required = false) String version,
+                                          @RequestParam(name = "id", required = false) Integer id,
+                                          @RequestParam(name = "name", required = false) String name,
+                                          @RequestParam(name = "email", required = false) String email,
+                                          @RequestParam(name = "phone", required = false) String phone) {
         AbstractView jsonView = new MappingJackson2JsonView();
         Map<String, Object> map = new HashMap<>();
         if (token != null) {
@@ -163,18 +161,18 @@ public class UserController {
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public DataResult<JSONObject> signin(HttpServletRequest request, HttpServletResponse response,
-                               @RequestParam(name = "version", required = false) String version,
-                               @RequestParam(name = "targetUrl", required = false) String targetUrl,
-                               @RequestParam(name = "username", required = true) String username,
-                               @RequestParam(name = "password", required = true) String password) throws UnsupportedEncodingException {
+                                         @RequestParam(name = "version", required = false) String version,
+                                         @RequestParam(name = "targetUrl", required = false) String targetUrl,
+                                         @RequestParam(name = "username", required = true) String username,
+                                         @RequestParam(name = "password", required = true) String password) throws UnsupportedEncodingException {
 //        Map<String, Object> map = new HashMap<>();
         UserEntity userEntity = new UserEntity();
         if (username == null || username.isEmpty()) {
-            return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(),AuthConstants.NULL_NAME);
+            return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(), AuthConstants.NULL_NAME);
         }
 
         if (password == null || password.isEmpty()) {
-            return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(),AuthConstants.NULL_PASSWORD);
+            return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(), AuthConstants.NULL_PASSWORD);
         }
 
         if (username != null && username.indexOf("@") != -1) {
@@ -187,21 +185,22 @@ public class UserController {
         userEntity.setPassword(md5.getMD5());
         userEntity = userService.login(userEntity);
         if (userEntity == null) {
-            return new DataResult<>(StateCode.AUTH_ERROR_10002.getCode(),AuthConstants.USER_PSD_ERROR);
+            return new DataResult<>(StateCode.AUTH_ERROR_10002.getCode(), AuthConstants.USER_PSD_ERROR);
         } else {
 //            map.put("code", "0000");
 //            map.put("data", targetUrl);
-
-            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            //TODO  此处加 tn_ 标注token 特殊性，后期优化删除，现在不动
+            String uuid = "tn_" + UUID.randomUUID().toString().replaceAll("-", "");
             jc.set("token", uuid);
 
-            jc.set(uuid, JSON.toJSONString(userEntity));
+            UserEntity userEntity1 = userService.queryUser(userEntity);
+            jc.set(uuid, JSON.toJSONString(userEntity1));
 //            if (4 == userEntity.getUsertype()) {
 //                map.put("code", "301");
 //            }
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("token",uuid);
-            jsonObject.put("user",userEntity);
+            jsonObject.put("token", uuid);
+            jsonObject.put("user", userEntity);
 
             DataResult<JSONObject> dataResult = new DataResult<>();
             dataResult.setData(jsonObject);

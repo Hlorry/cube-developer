@@ -4,12 +4,15 @@ import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.EmailConstants;
 import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
+import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
+import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
 import org.springframework.context.annotation.Scope;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -148,9 +151,12 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
+    @TokenVerify
     public BaseResult product(HttpServletRequest request, HttpServletResponse response,
+                              @RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "account", required = true) String account,
-                              @RequestParam(name = "version", required = false) String version) {
+                              @RequestParam(name = "version", required = false) String version,
+                              UserEntity userSession) {
         UserEntity userEntity = new UserEntity();
         if (account.contains("@")) {
             userEntity.setEmail(account);
@@ -236,75 +242,78 @@ public class AuthController {
     /**
      * 邮件密码重置验证
      *
-     * @param actmd5  系统生成的字符串
+     * @param actmd5 系统生成的字符串
      * @param token
-     * @param version
      * @return
      */
-    @RequestMapping(value = "/password/activation", method = {RequestMethod.POST, RequestMethod.GET})
-    public ModelAndView pwdActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
+    @RequestMapping(value = "/password/activation", method = RequestMethod.GET)
+    public String pwdActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
                                       @RequestParam(name = "token", required = false) String token,
-                                      @RequestParam(name = "version", required = false) String version) {
-        String value = jc.get(actmd5);
-        Map<String, Object> map = new HashMap<>();
-        String redirect = "";
-        if (value != null) {
-            map.put("id", value);
-            map.put("token", actmd5);
-            map.put(AuthConstants.CODE, StateCode.Ok.getCode());
-            map.put(AuthConstants.DESC, "ok");
-
-            redirect = "redirect:/route/forget";
-        } else if (Objects.isNull(value)) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012.getCode());
-            map.put(AuthConstants.DESC, "Verify expired");
+                                      Model model) {
+        if (Objects.nonNull(actmd5)) {
+            String value = jc.get(actmd5);
+            if (value != null) {
+                model.addAttribute("id", value);
+                model.addAttribute("code", 200);
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(Integer.valueOf(value));
+                UserEntity user = userDao.queryUser(userEntity);
+                if (Objects.isNull(user)) {
+                    model.addAttribute("code", 500);
+                }
+            } else {
+                model.addAttribute("code", 500);
+            }
+        } else {
+            model.addAttribute("code", 500);
         }
-        return new ModelAndView(redirect, map);
+        return "password-new";
     }
 
     /**
-     * 密码重置邮件发送
+     * 密码重置验证邮件或手机发送
      *
      * @param request
      * @param response
-     * @param email
+     * @param account
      * @return
      */
     @RequestMapping(value = "/password/forget", method = RequestMethod.POST)
-    public ModelAndView activation(HttpServletRequest request, HttpServletResponse response,
-                                   @RequestParam(name = "email", required = true) String email,
-                                   @RequestParam(name = "version", required = false) String version) {
-
-        AbstractView jsonView = new MappingJackson2JsonView();
-
-        Map<String, Object> map = new HashMap<>();
+    public BaseResult activation(HttpServletRequest request, HttpServletResponse response,
+                                 @RequestParam(name = "account", required = true) String account,
+                                 @RequestParam(name = "version", required = false) String version) {
 
         UserEntity userEntity = new UserEntity();
-        userEntity.setEmail(email);
+        if (account.contains("@")) {
+            userEntity.setEmail(account);
+        } else {
+            userEntity.setPhone(account);
+        }
 
         UserEntity user = userDao.queryUser(userEntity);
 
         if (Objects.isNull(user)) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008.getCode());
-            map.put(AuthConstants.DESC, "No such check information");
-            jsonView.setAttributesMap(map);
-            return new ModelAndView(jsonView);
+            return BaseResult.build(StateCode.AUTH_ERROR_10021, "No users");
         }
         //获取uri 邮箱验证时用户访问页面
         //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        //发送Email 验证
-        //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(user.getName());
-        jc.set(md5, user.getId() + "");
-        jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-
-        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), email);
-
-        map.put(AuthConstants.CODE, StateCode.Ok.getCode());
-        map.put(AuthConstants.DESC, "ok");
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        if (Objects.nonNull(userEntity.getEmail())) {
+            //发送Email 验证
+            //MD5去重算法生成mail验证
+            String md5 = Md5Helper.MD5.getMD5(user.getName());
+            jc.set(md5, user.getId() + "");
+            jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
+            return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+        } else {
+            String postRequest = SendMSMUtils.postRequest(userEntity.getPhone(), null);
+            if (Objects.nonNull(postRequest)) {
+                return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+            } else {
+                return BaseResult.build(StateCode.AUTH_ERROR_9999, "SMS send failure");
+            }
+        }
     }
 
 

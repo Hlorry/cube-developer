@@ -11,6 +11,10 @@ package cn.getcube.develop;
 public enum StateCode {
     Ok(200),
     AUTH_ERROR_100(100),
+    ParamMiss(700),                     //参数缺失
+    TokenFailed(800),                   //token失效
+
+    AUTH_ERROR_9999(9999),              //短信发送失败
     AUTH_ERROR_10000(10000),            //无使用权限
     AUTH_ERROR_10001(10001),            //注册失败
     AUTH_ERROR_10002(10002),            //账号或密码错误
