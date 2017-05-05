@@ -8,10 +8,7 @@ import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.CertifiedService;
-import cn.getcube.develop.utils.EmailUtils;
-import cn.getcube.develop.utils.FileUploadUtils;
-import cn.getcube.develop.utils.MD5;
-import cn.getcube.develop.utils.Md5Helper;
+import cn.getcube.develop.utils.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,13 +37,11 @@ import java.util.Objects;
 public class AuthController {
 
     @Resource
+    JedisCluster jc;
+    @Resource
     private CertifiedService certifiedService;
-
     @Resource
     private UserDao userDao;
-
-    @Resource
-    JedisCluster jc;
 
     @RequestMapping(value = "/certified/find", method = RequestMethod.POST)
     public ModelAndView certifiedFind(HttpServletRequest request, HttpServletResponse response,
@@ -117,22 +112,22 @@ public class AuthController {
         Map<String, Object> map = new HashMap<>();
         try {
             CertifiedEntity queryByUserId = certifiedService.queryByUserId(certifiedEntity.getUserId());
-            if(queryByUserId != null){
+            if (queryByUserId != null) {
                 map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10019);
                 map.put(AuthConstants.DESC, "你已上传企业证人信息，请耐心等待审核结果");
-                if(level != null && level == 1){
+                if (level != null && level == 1) {
                     return new ModelAndView("redirect:/route/personal", map);
-                }else{
+                } else {
                     return new ModelAndView("redirect:/route/register", map);
                 }
-            }else{
+            } else {
                 certifiedService.saveCertified(certifiedEntity);
                 map.put(AuthConstants.CODE, StateCode.Ok);
                 map.put(AuthConstants.DESC, "certified save ok");
                 map.put("email", email);
-                if(level != null && level == 1){
+                if (level != null && level == 1) {
                     return new ModelAndView("redirect:/route/personal", map);
-                }else{
+                } else {
                     return new ModelAndView("redirect:/route/register", map);
                 }
             }
@@ -153,40 +148,32 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
-    public ModelAndView product(HttpServletRequest request, HttpServletResponse response,
-                                @RequestParam(name = "account", required = true) String account,
-                                @RequestParam(name = "version", required = false) String version) {
-        AbstractView jsonView = new MappingJackson2JsonView();
-
+    public BaseResult product(HttpServletRequest request, HttpServletResponse response,
+                              @RequestParam(name = "account", required = true) String account,
+                              @RequestParam(name = "version", required = false) String version) {
         UserEntity userEntity = new UserEntity();
-        if(account.contains("@")){
+        if (account.contains("@")) {
             userEntity.setEmail(account);
-        }else{
+        } else {
             userEntity.setPhone(account);
         }
         UserEntity user = userDao.queryUser(userEntity);
 
-        /*if(user != null){
-
-        }else{
-
-        }*/
-        //获取uri 邮箱验证时用户访问页面
-        //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-
-        //发送Email 验证
-        //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(user.getName());
-        jc.set(md5, user.getId() + "");
-        jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-        //发送数据
-        EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
-
-        Map<String, Object> map = new HashMap<>();
-        map.put(AuthConstants.CODE, StateCode.Ok.getCode());
-        map.put(AuthConstants.DESC, "ok");
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        if (user != null && Objects.nonNull(userEntity.getEmail())) {
+            //发送Email 验证
+            //MD5去重算法生成mail验证
+            String md5 = Md5Helper.MD5.getMD5(user.getName());
+            jc.set(md5, user.getId() + "");
+            jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            //发送数据
+            EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
+            return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+        } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
+            SendMSMUtils.postRequest(userEntity.getPhone(), null);
+            return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+        } else {
+            return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
+        }
     }
 
     /**
@@ -419,6 +406,7 @@ public class AuthController {
 
     /**
      * 个人信息保存
+     *
      * @return
      */
     @RequestMapping(value = "/personal/save", method = RequestMethod.POST)
@@ -482,6 +470,7 @@ public class AuthController {
 
     /**
      * 企业认证信息查询
+     *
      * @return
      */
     @RequestMapping(value = "/certified/queryByUserId", method = RequestMethod.POST)
@@ -492,15 +481,15 @@ public class AuthController {
 
         Map<String, Object> map = new HashMap<>();
         AbstractView jsonView = new MappingJackson2JsonView();
-        if(token == null){
+        if (token == null) {
             map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10016);
             map.put(AuthConstants.DESC, "参数缺失");
-        }else{
+        } else {
             CertifiedEntity certifiedEntity = certifiedService.queryByUserId(userId);
-            if(certifiedEntity != null){
+            if (certifiedEntity != null) {
                 map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10019);
                 map.put(AuthConstants.DESC, "你已上传企业证人信息，请耐心等待审核结果");
-            }else{
+            } else {
                 map.put(AuthConstants.CODE, StateCode.Ok);
                 map.put(AuthConstants.DESC, "OK");
             }

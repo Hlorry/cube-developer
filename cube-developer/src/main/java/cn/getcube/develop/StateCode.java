@@ -31,7 +31,8 @@ public enum StateCode {
     AUTH_ERROR_10017(10017),            //信息修改失败
     AUTH_ERROR_10018(10018),            //信息验证失败
     AUTH_ERROR_10019(10019),            //信息已存在
-    AUTH_ERROR_10020(10020);            //账户信息认证未通过
+    AUTH_ERROR_10020(10020),            //账户信息认证未通过
+    AUTH_ERROR_10021(10021);            //用户不存在
 
     private int code;
 
