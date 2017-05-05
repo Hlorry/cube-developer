@@ -2,6 +2,7 @@ package cn.getcube.develop.service.Impl;
 
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.EmailConstants;
+import cn.getcube.develop.StateCode;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
@@ -37,8 +38,8 @@ public class UserServiceImpl implements UserService {
         Pattern pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$");
         Matcher matcher = pattern.matcher(userEntity.getEmail());
         if (!matcher.matches()) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10004);
-            map.put(AuthConstants.AUTH_ERRMSG, "E-mail format error");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10004);
+            map.put(AuthConstants.DESC, "E-mail format error");
             return map;
         }
 
@@ -57,7 +58,7 @@ public class UserServiceImpl implements UserService {
             userEntity.setBiz_verify(0);
             userEntity.setPhone_verify(0);
             userDao.addUser(userEntity);
-            map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
+            map.put(AuthConstants.CODE, StateCode.Ok);
             map.put("id", String.valueOf(userEntity.getId()));
 
             //发送Email 验证
@@ -71,8 +72,8 @@ public class UserServiceImpl implements UserService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_100);
-            map.put(AuthConstants.AUTH_ERRMSG, "unknown mistake");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_100);
+            map.put(AuthConstants.DESC, "unknown mistake");
             return map;
         }
     }

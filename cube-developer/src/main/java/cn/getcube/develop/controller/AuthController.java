@@ -3,6 +3,7 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.EmailConstants;
 import cn.getcube.develop.HttpUriCode;
+import cn.getcube.develop.StateCode;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
@@ -56,8 +57,8 @@ public class AuthController {
         CertifiedEntity ce = certifiedService.queryCertified(id);
         Map<String, Object> map = new HashMap<>();
         if (Objects.isNull(ce)) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10008);
-            map.put(AuthConstants.AUTH_ERRMSG, "No such check information");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008);
+            map.put(AuthConstants.DESC, "No such check information");
         } else {
             //获取uri 邮箱验证时用户访问页面
             //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
@@ -117,8 +118,8 @@ public class AuthController {
         try {
             CertifiedEntity queryByUserId = certifiedService.queryByUserId(certifiedEntity.getUserId());
             if(queryByUserId != null){
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10019);
-                map.put(AuthConstants.AUTH_ERRMSG, "你已上传企业证人信息，请耐心等待审核结果");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10019);
+                map.put(AuthConstants.DESC, "你已上传企业证人信息，请耐心等待审核结果");
                 if(level != null && level == 1){
                     return new ModelAndView("redirect:/route/personal", map);
                 }else{
@@ -126,8 +127,8 @@ public class AuthController {
                 }
             }else{
                 certifiedService.saveCertified(certifiedEntity);
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "certified save ok");
+                map.put(AuthConstants.CODE, StateCode.Ok);
+                map.put(AuthConstants.DESC, "certified save ok");
                 map.put("email", email);
                 if(level != null && level == 1){
                     return new ModelAndView("redirect:/route/personal", map);
@@ -137,8 +138,8 @@ public class AuthController {
             }
 
         } catch (Exception e) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10007);
-            map.put(AuthConstants.AUTH_ERRMSG, "Failed to save authentication information");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10007);
+            map.put(AuthConstants.DESC, "Failed to save authentication information");
             return new ModelAndView("redirect:/route/register", map);
         }
     }
@@ -148,20 +149,28 @@ public class AuthController {
      *
      * @param request
      * @param response
-     * @param email
+     * @param account
      * @return
      */
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
     public ModelAndView product(HttpServletRequest request, HttpServletResponse response,
-                                @RequestParam(name = "email", required = true) String email,
+                                @RequestParam(name = "account", required = true) String account,
                                 @RequestParam(name = "version", required = false) String version) {
         AbstractView jsonView = new MappingJackson2JsonView();
 
         UserEntity userEntity = new UserEntity();
-        userEntity.setEmail(email);
-
+        if(account.contains("@")){
+            userEntity.setEmail(account);
+        }else{
+            userEntity.setPhone(account);
+        }
         UserEntity user = userDao.queryUser(userEntity);
 
+        /*if(user != null){
+
+        }else{
+
+        }*/
         //获取uri 邮箱验证时用户访问页面
         //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
@@ -174,8 +183,8 @@ public class AuthController {
         EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
 
         Map<String, Object> map = new HashMap<>();
-        map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-        map.put(AuthConstants.AUTH_SUCCESS, "ok");
+        map.put(AuthConstants.CODE, StateCode.Ok.getCode());
+        map.put(AuthConstants.DESC, "ok");
         jsonView.setAttributesMap(map);
         return new ModelAndView(jsonView);
     }
@@ -186,13 +195,11 @@ public class AuthController {
      * @param actmd5  系统生成的字符串
      *                当字符串为32位时表示注册账号验证，
      *                当字符串位16位时表示密码重置验证。
-     * @param token
      * @param version
      * @return
      */
     @RequestMapping(value = "/activation", method = {RequestMethod.POST, RequestMethod.GET})
     public ModelAndView activation(@RequestParam(name = "actmd5", required = true) String actmd5,
-                                   @RequestParam(name = "token", required = false) String token,
                                    @RequestParam(name = "version", required = false) String version) {
         String value = jc.get(actmd5);
         Map<String, Object> map = new HashMap<>();
@@ -204,15 +211,15 @@ public class AuthController {
             userEntity.setActivation(1);
             int updateUser = userDao.updateUser(userEntity);
             if (updateUser > 0) {
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "ok");
+                map.put(AuthConstants.CODE, StateCode.Ok.getCode());
+                map.put(AuthConstants.DESC, "ok");
                 //删除验证reidskey
                 jc.del(actmd5);
                 redirect = "redirect:/route/register";
             }
         } else if (Objects.isNull(value)) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10012);
-            map.put(AuthConstants.AUTH_ERRMSG, "Verify expired");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012.getCode());
+            map.put(AuthConstants.DESC, "Verify expired");
             redirect = "redirect:/route/register";
         }
         return new ModelAndView(redirect, map);
@@ -236,13 +243,13 @@ public class AuthController {
         if (value != null) {
             map.put("id", value);
             map.put("token", actmd5);
-            map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-            map.put(AuthConstants.AUTH_SUCCESS, "ok");
+            map.put(AuthConstants.CODE, StateCode.Ok.getCode());
+            map.put(AuthConstants.DESC, "ok");
 
             redirect = "redirect:/route/forget";
         } else if (Objects.isNull(value)) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10012);
-            map.put(AuthConstants.AUTH_ERRMSG, "Verify expired");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012.getCode());
+            map.put(AuthConstants.DESC, "Verify expired");
         }
         return new ModelAndView(redirect, map);
     }
@@ -270,8 +277,8 @@ public class AuthController {
         UserEntity user = userDao.queryUser(userEntity);
 
         if (Objects.isNull(user)) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10008);
-            map.put(AuthConstants.AUTH_ERRMSG, "No such check information");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008.getCode());
+            map.put(AuthConstants.DESC, "No such check information");
             jsonView.setAttributesMap(map);
             return new ModelAndView(jsonView);
         }
@@ -286,8 +293,8 @@ public class AuthController {
 
         EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), email);
 
-        map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-        map.put(AuthConstants.AUTH_SUCCESS, "ok");
+        map.put(AuthConstants.CODE, StateCode.Ok.getCode());
+        map.put(AuthConstants.DESC, "ok");
         jsonView.setAttributesMap(map);
         return new ModelAndView(jsonView);
     }
@@ -313,8 +320,8 @@ public class AuthController {
         Map<String, Object> map = new HashMap<>();
 
         if (!jc.exists(actmd5)) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10012);
-            map.put(AuthConstants.AUTH_ERRMSG, "Verify expired");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012);
+            map.put(AuthConstants.DESC, "Verify expired");
             jsonView.setAttributesMap(map);
             return new ModelAndView(jsonView);
         }
@@ -328,13 +335,13 @@ public class AuthController {
         if (updateUser > 0) {
             //删除验证reidskey
             jc.del(actmd5);
-            map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-            map.put(AuthConstants.AUTH_SUCCESS, "ok");
+            map.put(AuthConstants.CODE, StateCode.Ok);
+            map.put(AuthConstants.DESC, "ok");
             jsonView.setAttributesMap(map);
             return new ModelAndView(jsonView);
         }
-        map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_100);
-        map.put(AuthConstants.AUTH_ERRMSG, "unknown mistake");
+        map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_100);
+        map.put(AuthConstants.DESC, "unknown mistake");
         jsonView.setAttributesMap(map);
         return new ModelAndView(jsonView);
     }
@@ -352,8 +359,8 @@ public class AuthController {
         jc.expire(token, AuthConstants.AUTH_TOKEN_FAIL_TIME);
 
         Map<String, Object> map = new HashMap<>();
-        map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-        map.put(AuthConstants.AUTH_SUCCESS, "OK");
+        map.put(AuthConstants.CODE, StateCode.Ok);
+        map.put(AuthConstants.DESC, "OK");
         map.put("token", token);
 
         jsonView.setAttributesMap(map);
@@ -392,19 +399,19 @@ public class AuthController {
                 userEntity.setUpdate_time(new Date());
                 int updateUser = userDao.updateUser(userEntity);
                 if (updateUser > 0) {
-                    map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                    map.put(AuthConstants.AUTH_SUCCESS, "ok");
+                    map.put(AuthConstants.CODE, StateCode.Ok);
+                    map.put(AuthConstants.DESC, "ok");
                 } else {
-                    map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_100);
-                    map.put(AuthConstants.AUTH_ERRMSG, "unknown mistake");
+                    map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_100);
+                    map.put(AuthConstants.DESC, "unknown mistake");
                 }
             } else {
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10003);
-                map.put(AuthConstants.AUTH_ERRMSG, "Old password is incorrect");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10003);
+                map.put(AuthConstants.DESC, "Old password is incorrect");
             }
         } else {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10014);
-            map.put(AuthConstants.AUTH_ERRMSG, "Please login account");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10014);
+            map.put(AuthConstants.DESC, "Please login account");
         }
         jsonView.setAttributesMap(map);
         return new ModelAndView(jsonView);
@@ -458,16 +465,16 @@ public class AuthController {
             CertifiedEntity ce = certifiedService.queryCertified(id);
             if (Objects.isNull(ce)) {
                 certifiedService.savePersonal(entity);
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "ok");
+                map.put(AuthConstants.CODE, StateCode.Ok);
+                map.put(AuthConstants.DESC, "ok");
             } else {
                 certifiedService.updatePersonal(entity);
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "ok");
+                map.put(AuthConstants.CODE, StateCode.Ok);
+                map.put(AuthConstants.DESC, "ok");
             }
         } else {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10014);
-            map.put(AuthConstants.AUTH_ERRMSG, "Please login account");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10014);
+            map.put(AuthConstants.DESC, "Please login account");
         }
 
         return new ModelAndView("redirect:/route/personal", map);
@@ -486,16 +493,16 @@ public class AuthController {
         Map<String, Object> map = new HashMap<>();
         AbstractView jsonView = new MappingJackson2JsonView();
         if(token == null){
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10016);
-            map.put(AuthConstants.AUTH_ERRMSG, "参数缺失");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10016);
+            map.put(AuthConstants.DESC, "参数缺失");
         }else{
             CertifiedEntity certifiedEntity = certifiedService.queryByUserId(userId);
             if(certifiedEntity != null){
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10019);
-                map.put(AuthConstants.AUTH_ERRMSG, "你已上传企业证人信息，请耐心等待审核结果");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10019);
+                map.put(AuthConstants.DESC, "你已上传企业证人信息，请耐心等待审核结果");
             }else{
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "OK");
+                map.put(AuthConstants.CODE, StateCode.Ok);
+                map.put(AuthConstants.DESC, "OK");
             }
         }
 

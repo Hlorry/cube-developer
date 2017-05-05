@@ -18,7 +18,7 @@ import org.springframework.context.annotation.ImportResource;
  */
 @Configuration
 @ComponentScan("com.getcube.develop.*")
-@ImportResource(locations={"classpath:applicationContext.xml"})
+@ImportResource(locations={"classpath:applicationContext.xml","classpath:spring-mvc.xml"})
 @SpringBootApplication
 public class DevelopStartMain implements EmbeddedServletContainerCustomizer {
     private static final int PORT = 18100;

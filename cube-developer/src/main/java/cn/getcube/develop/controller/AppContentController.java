@@ -1,6 +1,7 @@
 package cn.getcube.develop.controller;
 
 import cn.getcube.develop.AuthConstants;
+import cn.getcube.develop.StateCode;
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.LoginLog;
 import cn.getcube.develop.para.AppPara;
@@ -57,11 +58,11 @@ public class AppContentController {
         para.setNumbers(appEntity.getUseId());
         if(para.getCubes()!=null){
             loginLogs = loginLogService.queryInterval(para);
-            map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
+            map.put(AuthConstants.CODE, StateCode.Ok);
             map.put("data", loginLogs);
         }else{
         	//loginLogs = loginLogService.queryInterval(para);
-            map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_ERROR_10008);
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008);
             map.put("data", loginLogs);
         }
        /* objects.forEach(a -> {

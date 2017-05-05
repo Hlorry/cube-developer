@@ -2,6 +2,7 @@ package cn.getcube.develop.controller;
 
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.HttpUriCode;
+import cn.getcube.develop.StateCode;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
 import cn.getcube.develop.utils.FileUploadUtils;
@@ -50,17 +51,17 @@ public class UserController {
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ModelAndView product(HttpServletRequest request, HttpServletResponse response,
                                 @RequestParam(name = "name", required = true) String name,
-                                @RequestParam(name = "email", required = true) String email,
+                                @RequestParam(name = "account", required = true) String account,
                                 @RequestParam(name = "password", required = true) String password,
-//                                @RequestParam(name = "phone", required = true) String phone,
+                                @RequestParam(name = "phone", required = true) String phone,
                                 @RequestParam(name = "userType", required = true) Integer userType,
                                 @RequestParam(name = "way", required = true) Integer way) {
         AbstractView jsonView = new MappingJackson2JsonView();
-        if (name != null && email != null && password != null && userType != null && way != null) {
+        if (name != null && account != null && password != null && userType != null && way != null) {
 
             UserEntity userEntity = new UserEntity();
             userEntity.setName(name);
-            userEntity.setEmail(email);
+            userEntity.setEmail(account);
             //MD5加密
             MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
             userEntity.setPassword(md5.getMD5());
@@ -94,8 +95,8 @@ public class UserController {
         Map<String, Object> map = new HashMap<>();
         if (token != null) {
             if (!jc.exists(token)) {
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10015);
-                map.put(AuthConstants.AUTH_ERRMSG, "token become invalid");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10015);
+                map.put(AuthConstants.DESC, "token become invalid");
                 map.put("token", token);
                 jsonView.setAttributesMap(map);
                 return new ModelAndView(jsonView);
@@ -112,8 +113,8 @@ public class UserController {
 
 
         if (Objects.isNull(user)) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10008);
-            map.put(AuthConstants.AUTH_ERRMSG, "no such check information");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008);
+            map.put(AuthConstants.DESC, "no such check information");
 
             jsonView.setAttributesMap(map);
             return new ModelAndView(jsonView);
@@ -249,17 +250,17 @@ public class UserController {
             userEntity.setUpdate_time(new Date());
             int updateUser = userService.updateUser(userEntity);
             if (updateUser > 0) {
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "修改成功");
+                map.put(AuthConstants.CODE, StateCode.Ok);
+                map.put(AuthConstants.DESC, "修改成功");
                 jsonView.setAttributesMap(map);
             } else {
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10017);
-                map.put(AuthConstants.AUTH_ERRMSG, "修改失败");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10017);
+                map.put(AuthConstants.DESC, "修改失败");
                 jsonView.setAttributesMap(map);
             }
         } else {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10000);
-            map.put(AuthConstants.AUTH_ERRMSG, "无使用权限");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10000);
+            map.put(AuthConstants.DESC, "无使用权限");
             jsonView.setAttributesMap(map);
         }
         return new ModelAndView(jsonView);
@@ -297,27 +298,27 @@ public class UserController {
                     int updateUser = userService.updateUser(userEntity);
                     if (updateUser > 0) {
                         jc.expire(phone + "data", 1);
-                        map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                        map.put(AuthConstants.AUTH_SUCCESS, "手机绑定成功");
+                        map.put(AuthConstants.CODE, StateCode.Ok);
+                        map.put(AuthConstants.DESC, "手机绑定成功");
                         jsonView.setAttributesMap(map);
                     } else {
-                        map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10017);
-                        map.put(AuthConstants.AUTH_ERRMSG, "绑定手机失败，请重试！");
+                        map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10017);
+                        map.put(AuthConstants.DESC, "绑定手机失败，请重试！");
                         jsonView.setAttributesMap(map);
                     }
                 } else {
-                    map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10018);
-                    map.put(AuthConstants.AUTH_ERRMSG, "验证失败！请填写正确的验证信息");
+                    map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10018);
+                    map.put(AuthConstants.DESC, "验证失败！请填写正确的验证信息");
                     jsonView.setAttributesMap(map);
                 }
             } else {
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10012);
-                map.put(AuthConstants.AUTH_ERRMSG, "验证过期");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012);
+                map.put(AuthConstants.DESC, "验证过期");
                 jsonView.setAttributesMap(map);
             }
         } else {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10000);
-            map.put(AuthConstants.AUTH_ERRMSG, "无使用权限");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10000);
+            map.put(AuthConstants.DESC, "无使用权限");
             jsonView.setAttributesMap(map);
         }
         return new ModelAndView(jsonView);
@@ -341,8 +342,8 @@ public class UserController {
                                @RequestParam(name = "version", required = false) String version) {
         Map<String, Object> map = new HashMap<>();
         if (token == null) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10000);
-            map.put(AuthConstants.AUTH_ERRMSG, "无使用权限");
+            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10000);
+            map.put(AuthConstants.DESC, "无使用权限");
         } else {
             String avatarUrl = FileUploadUtils.uploadFile(avatar, 1, request);
             UserEntity userEntity = new UserEntity();
@@ -351,11 +352,11 @@ public class UserController {
             userEntity.setId(id);
             int updateUser = userService.updateUser(userEntity);
             if (updateUser > 0) {
-                map.put(AuthConstants.AUTH_STATE, AuthConstants.AUTH_SUCCESS_200);
-                map.put(AuthConstants.AUTH_SUCCESS, "头像上传成功");
+                map.put(AuthConstants.CODE, StateCode.Ok);
+                map.put(AuthConstants.DESC, "头像上传成功");
             } else {
-                map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10017);
-                map.put(AuthConstants.AUTH_ERRMSG, "头像上传失败");
+                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10017);
+                map.put(AuthConstants.DESC, "头像上传失败");
             }
         }
         return new ModelAndView("redirect:/route/personal", map);
