@@ -11,12 +11,13 @@ public interface AuthConstants {
     //密码MD5加密通配字符串
     String USER_SALT = "user_password";
 
+    //邮箱格式错误
+    String FORMAT_ERROR = "Email format error";
+
     /**
      * 返回code信息
      */
     Integer OK = 200;
-
-
 
     /**
      * 状态 标志

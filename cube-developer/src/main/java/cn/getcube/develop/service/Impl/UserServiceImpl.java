@@ -15,8 +15,6 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -34,23 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, Object> addUser(UserEntity userEntity, String uri) {
         Map<String, Object> map = new HashMap<>();
-        //邮箱验证
-        Pattern pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$");
-        Matcher matcher = pattern.matcher(userEntity.getEmail());
-        if (!matcher.matches()) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10004);
-            map.put(AuthConstants.DESC, "E-mail format error");
-            return map;
-        }
 
-        //手机号验证
-        /*Pattern p = Pattern.compile("^1[3|5|7|8]{1}[0-9]{9}$");
-        Matcher m = p.matcher(userEntity.getPhone());
-        if (!m.matches()) {
-            map.put(AuthConstants.AUTH_ERRCODE, AuthConstants.AUTH_ERROR_10001);
-            map.put(AuthConstants.AUTH_ERRMSG, "phone format error");
-            return map;
-        }*/
         try {
             userEntity.setCreate_time(new Date());
             userEntity.setUpdate_time(new Date());
