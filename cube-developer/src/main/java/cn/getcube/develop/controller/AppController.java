@@ -10,9 +10,11 @@ import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.FileUploadUtils;
 import cn.getcube.develop.utils.MD5;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.AbstractView;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
@@ -233,13 +235,12 @@ public class AppController {
     }
 
     @RequestMapping(value = "/avatar", method = RequestMethod.POST)
-    public DataResult<Map<String, Object>> avatar(HttpServletRequest request,
-                                                  @RequestParam(name = "token", required = true) String token,
+    public DataResult avatar(@RequestParam(name = "token") String token,
                                                   @RequestParam(name = "avatar", required = true) MultipartFile avatar,
-                                                  @RequestParam(name = "appId", required = true) String appId) {
+                                                  @RequestParam(name = "appId") String appId) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
-        String avatarUrl = FileUploadUtils.uploadFile(avatar, 4, request);
+        String avatarUrl = FileUploadUtils.uploadFile(avatar, 4);
         if (null == avatarUrl || avatarUrl.equals("error")) {
             dataResult.setCode(StateCode.APP_UPLOAD_AVATAR_ERROR.getCode());
             dataResult.setDesc("upload error.");

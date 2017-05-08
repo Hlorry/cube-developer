@@ -69,3 +69,5 @@ local.properties
 # Code Recommenders
 .recommenders/
 
+springboot.log
+springboot.log.*

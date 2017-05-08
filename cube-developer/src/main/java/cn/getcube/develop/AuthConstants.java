@@ -5,6 +5,9 @@ package cn.getcube.develop;
  */
 public interface AuthConstants {
 
+    //圖片臨時存放目錄
+    String AUTH_FILE_PATH = "/home/cube/mofang/data";
+
     //redis key 失效时间
     int AUTH_TOKEN_FAIL_TIME = 60 * 30;
 

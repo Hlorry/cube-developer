@@ -11,6 +11,7 @@ import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
 import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -93,9 +94,9 @@ public class AuthController {
                                       @RequestParam(name = "email", required = false) String email,
                                       @RequestParam(name = "level", required = false) Integer level,
                                       @RequestParam(name = "version", required = false) String version) {
-        String licenseUrl = FileUploadUtils.uploadFile(license, 2, request);
-        String agencyImgUrl = FileUploadUtils.uploadFile(agencyImg, 2, request);
-        String taxImgUrl = FileUploadUtils.uploadFile(taxImg, 2, request);
+        String licenseUrl = FileUploadUtils.uploadFile(license, 2);
+        String agencyImgUrl = FileUploadUtils.uploadFile(agencyImg, 2);
+        String taxImgUrl = FileUploadUtils.uploadFile(taxImg, 2);
 
         CertifiedEntity certifiedEntity = new CertifiedEntity();
         certifiedEntity.setCompanyName(cpName);
@@ -244,36 +245,7 @@ public class AuthController {
         }
     }
 
-    /**
-     * 邮件密码重置验证
-     *
-     * @param actmd5 系统生成的字符串
-     * @param token
-     * @return
-     */
-    @RequestMapping(value = "/password/activation", method = RequestMethod.GET)
-    public String pwdActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
-                                      @RequestParam(name = "token", required = false) String token,
-                                      Model model) {
-        if (Objects.nonNull(actmd5)) {
-            String value = jc.get(actmd5);
-            if (value != null) {
-                model.addAttribute("id", value);
-                model.addAttribute("code", 200);
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(Integer.valueOf(value));
-                UserEntity user = userDao.queryUser(userEntity);
-                if (Objects.isNull(user)) {
-                    model.addAttribute("code", 500);
-                }
-            } else {
-                model.addAttribute("code", 500);
-            }
-        } else {
-            model.addAttribute("code", 500);
-        }
-        return "password-new";
-    }
+
 
     /**
      * 密码重置验证邮件或手机发送
@@ -445,7 +417,7 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "/personal/save", method = RequestMethod.POST)
-    public ModelAndView resmailupdateet(HttpServletRequest request, HttpServletResponse response,
+    public ModelAndView resmailupdateet(HttpServletResponse response,
                                         @RequestParam(name = "token", required = true) String token,
                                         @RequestParam(name = "id", required = true) Integer id,
                                         @RequestParam(name = "plName", required = true) String plName,
@@ -461,10 +433,10 @@ public class AuthController {
         Map<String, Object> map = new HashMap<>();
 
         if (exists) {
-            String plPositiveImgUrl = FileUploadUtils.uploadFile(plPositiveImg, 3, request);
-            String plSideImgUrl = FileUploadUtils.uploadFile(plSideImg, 3, request);
-            String plHidnumberUrl = FileUploadUtils.uploadFile(plHidnumber, 3, request);
-            String passportUrl = FileUploadUtils.uploadFile(passport, 3, request);
+            String plPositiveImgUrl = FileUploadUtils.uploadFile(plPositiveImg, 3);
+            String plSideImgUrl = FileUploadUtils.uploadFile(plSideImg, 3);
+            String plHidnumberUrl = FileUploadUtils.uploadFile(plHidnumber, 3);
+            String passportUrl = FileUploadUtils.uploadFile(passport, 3);
 
             CertifiedEntity entity = new CertifiedEntity();
             entity.setUserId(id);

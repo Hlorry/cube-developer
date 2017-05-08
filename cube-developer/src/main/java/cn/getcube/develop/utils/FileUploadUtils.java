@@ -1,5 +1,6 @@
 package cn.getcube.develop.utils;
 
+import cn.getcube.develop.AuthConstants;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,11 +28,9 @@ public class FileUploadUtils {
      * @param file
      * @param imageType 图片类型 1.用户头像 /cubeImage/userAvatar/  2.认证图片 /cubeImage/certified/  3.身份证图片  /cubeImage/idCard/
      *                  4.应用图标 /cubeImage/appAvatar/
-     * @param request
      * @return
      */
-    public static String uploadFile(MultipartFile file, int imageType, HttpServletRequest request) {
-        String path = request.getSession().getServletContext().getRealPath("/");
+    public static String uploadFile(MultipartFile file, int imageType) {
         String file_path = (imageType == 1 ? FILE_PATH_USERAVATAR : imageType == 2 ? FILE_PATH_CERTIFIED : FILE_PATH_IDCARD);
         file_path = imageType == 4 ? FILE_PATH_APPAVATAR : file_path;
         String allFileName = file.getOriginalFilename();
@@ -44,7 +43,7 @@ public class FileUploadUtils {
                 fileName.equals("jpg") ||
                 fileName.equals("bmp")) {
 
-            File tempFile = new File(path.replaceAll("\\\\", "/") + file_path, new Date().getTime() + "." + String.valueOf(fileName));
+            File tempFile = new File(AuthConstants.AUTH_FILE_PATH.replaceAll("\\\\", "/") + file_path, new Date().getTime() + "." + String.valueOf(fileName));
             File tempFileParent = new File(tempFile.getParentFile().getParent());
             if (!tempFileParent.exists()) {
                 tempFileParent.mkdir();

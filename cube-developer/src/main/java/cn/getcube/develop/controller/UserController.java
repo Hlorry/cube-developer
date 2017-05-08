@@ -311,13 +311,13 @@ public class UserController {
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<UserEntity> upload(HttpServletRequest request,
+    public DataResult<UserEntity> upload(
                                @RequestParam(name = "token", required = true) String token,
                                @RequestParam(name = "avatar", required = true) MultipartFile avatar,
                                @RequestParam(name = "version", required = false) String version,
                                 UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
-            String avatarUrl = FileUploadUtils.uploadFile(avatar, 1, request);
+            String avatarUrl = FileUploadUtils.uploadFile(avatar, 1);
             UserEntity userEntity = new UserEntity();
             userEntity.setUpdate_time(new Date());
             userEntity.setAvatar(avatarUrl);
