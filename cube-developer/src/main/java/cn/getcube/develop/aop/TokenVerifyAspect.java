@@ -65,7 +65,7 @@ public class TokenVerifyAspect {
             String token = getCurrentToken(pjp.getArgs());
             if (StringUtils.isEmpty(token)) {
                 //必须 返回DataResult 不能是BaseResult
-                return BaseResult.build(StateCode.ParamMiss, "The required 'token' is missing from the request...");
+                return BaseResult.build(StateCode.AUTH_ERROR_10016, "The required 'token' is missing from the request...");
             }
             Object result = handleToken(token, currentMethod);
             if (Objects.nonNull(result)) {

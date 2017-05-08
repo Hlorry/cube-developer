@@ -3,23 +3,22 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
+import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.AppEntity;
+import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.FileUploadUtils;
 import cn.getcube.develop.utils.MD5;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.context.annotation.Scope;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.AbstractView;
-import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -39,14 +38,15 @@ public class AppController {
     public AppService appService;
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> createApp(@RequestParam(name = "token", required = true) String token,
-                                                      @RequestParam(name = "appName", required = false) String appName,
-                                                      @RequestParam(name = "appStage", required = false) String appStage,
-                                                      @RequestParam(name = "category", required = false) String category,
-                                                      @RequestParam(name = "description", required = false) String description,
-                                                      @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
-                                                      @RequestParam(name = "userId", required = false) String userId,
-                                                      @RequestParam(name = "version", required = false) String version) {
+                                                     @RequestParam(name = "appName", required = false) String appName,
+                                                     @RequestParam(name = "appStage", required = false) String appStage,
+                                                     @RequestParam(name = "category", required = false) String category,
+                                                     @RequestParam(name = "description", required = false) String description,
+                                                     @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
+                                                     @RequestParam(name = "userId", required = false) String userId,
+                                                     @RequestParam(name = "version", required = false) String version) {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行存储操作
@@ -65,16 +65,17 @@ public class AppController {
     }
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> updateApp(HttpServletRequest request,
-                                                      @RequestParam(name = "token", required = true) String token,
-                                                      @RequestParam(name = "appName", required = false) String appName,
-                                                      @RequestParam(name = "appStage", required = false) String appStage,
-                                                      @RequestParam(name = "category", required = false) String category,
-                                                      @RequestParam(name = "description", required = false) String description,
-                                                      @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
-                                                      @RequestParam(name = "userId", required = false) String userId,
-                                                      @RequestParam(name = "appId", required = true) String appId,
-                                                      @RequestParam(name = "version", required = false) String version) {
+                                                     @RequestParam(name = "token", required = true) String token,
+                                                     @RequestParam(name = "appName", required = false) String appName,
+                                                     @RequestParam(name = "appStage", required = false) String appStage,
+                                                     @RequestParam(name = "category", required = false) String category,
+                                                     @RequestParam(name = "description", required = false) String description,
+                                                     @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
+                                                     @RequestParam(name = "userId", required = false) String userId,
+                                                     @RequestParam(name = "appId", required = true) String appId,
+                                                     @RequestParam(name = "version", required = false) String version) {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行修改操作
@@ -97,11 +98,12 @@ public class AppController {
     }
 
     @RequestMapping(value = "/delete")
+    @TokenVerify
     public DataResult<Map<String, Object>> deleteApp(@RequestParam(name = "token") String token,
-                                                      @RequestParam(name = "appId") String appId,
-                                                      @RequestParam(name = "name") String appName,
-                                                      @RequestParam(name = "password") String password,
-                                                      @RequestParam(name = "version", required = false) String version) {
+                                                     @RequestParam(name = "appId") String appId,
+                                                     @RequestParam(name = "name") String appName,
+                                                     @RequestParam(name = "password") String password,
+                                                     @RequestParam(name = "version", required = false) String version) {
         // 判断用户输入的应用名称是否和应用ID匹配
         // 如果不匹配返回
         // 判断用户密码是否正确
@@ -112,11 +114,12 @@ public class AppController {
     }
 
     @RequestMapping(value = "/query", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> queryApp(@RequestParam(name = "token", required = true) String token,
-                                                     @RequestParam(name = "appId", required = true) String appId,
-                                                     @RequestParam(name = "appIndex", required = false) String appIndex,
-                                                     @RequestParam(name = "appName", required = false) String appName,
-                                                     @RequestParam(name = "version", required = false) String version) {
+                                                    @RequestParam(name = "appId", required = true) String appId,
+                                                    @RequestParam(name = "appIndex", required = false) String appIndex,
+                                                    @RequestParam(name = "appName", required = false) String appName,
+                                                    @RequestParam(name = "version", required = false) String version) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
         // 验证token。判断用户时候登陆
@@ -140,8 +143,9 @@ public class AppController {
     }
 
     @RequestMapping(value = "/query/all", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> queryAllApp(@RequestParam(name = "token", required = true) String token,
-                                                        @RequestParam(name = "userId", required = true) String userId) {
+                                                       @RequestParam(name = "userId", required = true) String userId) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
         // 验证token。判断用户时候登陆
@@ -164,29 +168,21 @@ public class AppController {
         return dataResult;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
-    public DataResult<Map<String, Object>> app(HttpServletRequest request) {
+    @RequestMapping(value = "", method = RequestMethod.POST)
+    @TokenVerify
+    public DataResult<Map<String, Object>> app(HttpServletRequest request,
+                                               @RequestParam(name = "token", required = true) String token,
+                                               UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
-        String userId = request.getParameter("userId");
-        if (userId == null && request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("cube_develops_userId")) {
-                    userId = cookie.getValue();
-                }
-            }
-        }
-        if (userId == null) {
+        if (userSession.getId() == null) {
             // userId等于空。。。
-            userId = "0";
+            userSession.setId(0);
         }
         // 根据用户的ID查询所有的应用信息
         AppPara appPara = new AppPara();
-        appPara.setUserId(Integer.parseInt(userId));
+        appPara.setUserId(userSession.getId());
         List<AppEntity> apps = appService.queryAllApps(appPara);
-        /*modelAndView.addObject("apps", apps);
-        modelAndView.setViewName("app");
-        return modelAndView;*/
         map.put("apps", apps);
         dataResult.setCode(StateCode.Ok.getCode());
         dataResult.setDesc("Ok.");
@@ -195,6 +191,7 @@ public class AppController {
     }
 
     @RequestMapping(value = "/detail", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> overview(HttpServletResponse response,
                                                     @RequestParam(name = "token", required = true) String token,
                                                     @RequestParam(name = "appId", required = true) String appId) throws IOException {
@@ -218,6 +215,7 @@ public class AppController {
     }
 
     @RequestMapping(value = "/param", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> param(@RequestParam(name = "token", required = true) String token,
                                                  @RequestParam(name = "appId", required = true) String appId) {
         Map<String, Object> map = new HashMap<>();
@@ -235,9 +233,10 @@ public class AppController {
     }
 
     @RequestMapping(value = "/avatar", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult avatar(@RequestParam(name = "token") String token,
-                                                  @RequestParam(name = "avatar", required = true) MultipartFile avatar,
-                                                  @RequestParam(name = "appId") String appId) {
+                             @RequestParam(name = "avatar", required = true) MultipartFile avatar,
+                             @RequestParam(name = "appId") String appId) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
         String avatarUrl = FileUploadUtils.uploadFile(avatar, 4);
@@ -256,16 +255,17 @@ public class AppController {
     }
 
     @RequestMapping(value = "/environment", method = RequestMethod.POST)
+    @TokenVerify
     public DataResult<Map<String, Object>> avatar(HttpServletRequest request,
                                                   @RequestParam(name = "token", required = true) String token,
-                                                   @RequestParam(name = "environment", required = false) String environment,
-                                                   @RequestParam(name = "appId", required = false) String appId,
-                                                   @RequestParam(name = "userId", required = false) Integer userId) {
+                                                  @RequestParam(name = "environment", required = false) String environment,
+                                                  @RequestParam(name = "appId", required = false) String appId,
+                                                  @RequestParam(name = "userId", required = false) Integer userId) {
         return appService.updateEnvironment(environment, appId, userId);
     }
 
     @RequestMapping(value = "/change_env", method = RequestMethod.POST)
-    public Map<String,Object> changeEnvironment(String appid){
-    	return appService.changeEnvironment(appid);
+    public Map<String, Object> changeEnvironment(String appid) {
+        return appService.changeEnvironment(appid);
     }
 }

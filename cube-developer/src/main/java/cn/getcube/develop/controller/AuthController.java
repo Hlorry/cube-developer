@@ -11,8 +11,6 @@ import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
 import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,17 +44,26 @@ public class AuthController {
     @Resource
     private UserDao userDao;
 
+    /**
+     * 通过ID 查询认证信息
+     *
+     * @param request
+     * @param response
+     * @param token
+     * @param id
+     * @param version
+     * @return
+     */
     @RequestMapping(value = "/certified/find", method = RequestMethod.POST)
-    public ModelAndView certifiedFind(HttpServletRequest request, HttpServletResponse response,
-                                      @RequestParam(name = "token", required = true) String token,
-                                      @RequestParam(name = "id", required = true) Integer id,
-                                      @RequestParam(name = "version", required = false) String version) {
-        AbstractView jsonView = new MappingJackson2JsonView();
+    @TokenVerify
+    public BaseResult certifiedFind(HttpServletRequest request, HttpServletResponse response,
+                                    @RequestParam(name = "token", required = true) String token,
+                                    @RequestParam(name = "id", required = true) Integer id,
+                                    @RequestParam(name = "version", required = false) String version) {
         CertifiedEntity ce = certifiedService.queryCertified(id);
         Map<String, Object> map = new HashMap<>();
         if (Objects.isNull(ce)) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008);
-            map.put(AuthConstants.DESC, "No such check information");
+            return BaseResult.build(StateCode.AUTH_ERROR_10008, "No such check information");
         } else {
             //获取uri 邮箱验证时用户访问页面
             //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
@@ -67,9 +74,49 @@ public class AuthController {
             ce.setPlPositiveImg(HttpUriCode.HTTP_CODE_URI + ce.getPlPositiveImg());
             ce.setPlSideImg(HttpUriCode.HTTP_CODE_URI + ce.getPlSideImg());
             map.put("cube", ce);
+
+            DataResult<Map<String, Object>> dataResult = new DataResult<>();
+            dataResult.setCode(StateCode.Ok.getCode());
+            dataResult.setDesc("OK.");
+            dataResult.setData(map);
+            return dataResult;
         }
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+    }
+
+    /**
+     * 查询当前登录用户是否上传企业认证信息
+     *
+     * @return
+     */
+    @RequestMapping(value = "/certified/queryByUserId", method = RequestMethod.POST)
+    @TokenVerify
+    public BaseResult queryByUserIdCertified(HttpServletRequest request, HttpServletResponse response,
+                                             @RequestParam(name = "token", required = true) String token,
+                                             @RequestParam(name = "version", required = false) String version,
+                                             UserEntity userSession) {
+
+        Map<String, Object> map = new HashMap<>();
+        if (token == null) {
+            return BaseResult.build(StateCode.AUTH_ERROR_10016, "参数缺失");
+        } else {
+            CertifiedEntity certifiedEntity = certifiedService.queryByUserId(userSession.getId());
+            if (certifiedEntity != null) {
+                DataResult<Map<String, Object>> dataResult = new DataResult<>();
+                dataResult.setCode(StateCode.Ok.getCode());
+                dataResult.setDesc("当前用户已上传企业证人信息，请耐心等待审核结果");
+
+                certifiedEntity.setTaxImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getTaxImg());
+                certifiedEntity.setAgencyImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getAgencyImg());
+                certifiedEntity.setLicenseImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getLicenseImg());
+                certifiedEntity.setPlPositiveImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getPlPositiveImg());
+                certifiedEntity.setPlSideImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getPlSideImg());
+                map.put("cube", certifiedEntity.toJsonEnterprise());
+                dataResult.setData(map);
+                return dataResult;
+            } else {
+                return BaseResult.build(StateCode.AUTH_ERROR_10008, "当前用户还未上传企业认证信息");
+            }
+        }
     }
 
     /**
@@ -151,7 +198,6 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
-    @TokenVerify
     public BaseResult product(HttpServletRequest request, HttpServletResponse response,
                               @RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "account", required = true) String account,
@@ -191,7 +237,7 @@ public class AuthController {
      * @param version
      * @return
      */
-    @RequestMapping(value = "/email/activation", method = {RequestMethod.POST, RequestMethod.GET})
+    @RequestMapping(value = "/email/activation", method = RequestMethod.GET)
     public BaseResult activation(@RequestParam(name = "actmd5", required = true) String actmd5,
                                  @RequestParam(name = "version", required = false) String version) {
         String value = jc.get(actmd5);
@@ -214,38 +260,6 @@ public class AuthController {
             return BaseResult.build(StateCode.AUTH_ERROR_10000, "无权限使用");
         }
     }
-
-    /**
-     * 手机验证接口
-     * @param actmd5
-     * @param version
-     * @return
-     */
-    @RequestMapping(value = "/phone/activation", method = {RequestMethod.POST, RequestMethod.GET})
-    public BaseResult phoneActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
-                                 @RequestParam(name = "version", required = false) String version) {
-        String value = jc.get(actmd5);
-        if (value != null && actmd5.length() == 6) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setId(Integer.valueOf(value));
-            userEntity.setUpdate_time(new Date());
-            userEntity.setActivation(1);
-            int updateUser = userDao.updateUser(userEntity);
-            if (updateUser > 0) {
-                //删除验证reidskey
-                jc.del(actmd5);
-                return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
-            } else {
-                return BaseResult.build(StateCode.AUTH_ERROR_10021, "用户不存在");
-            }
-        } else if (Objects.isNull(value)) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10012, "Verify expired!");
-        } else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10000, "无权限使用");
-        }
-    }
-
-
 
     /**
      * 密码重置验证邮件或手机发送
@@ -473,38 +487,6 @@ public class AuthController {
         }
 
         return new ModelAndView("redirect:/route/personal", map);
-    }
-
-    /**
-     * 企业认证信息查询
-     *
-     * @return
-     */
-    @RequestMapping(value = "/certified/queryByUserId", method = RequestMethod.POST)
-    public ModelAndView resmailupdateet(HttpServletRequest request, HttpServletResponse response,
-                                        @RequestParam(name = "token", required = true) String token,
-                                        @RequestParam(name = "userId", required = true) Integer userId,
-                                        @RequestParam(name = "version", required = false) String version) {
-
-        Map<String, Object> map = new HashMap<>();
-        AbstractView jsonView = new MappingJackson2JsonView();
-        if (token == null) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10016);
-            map.put(AuthConstants.DESC, "参数缺失");
-        } else {
-            CertifiedEntity certifiedEntity = certifiedService.queryByUserId(userId);
-            if (certifiedEntity != null) {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10019);
-                map.put(AuthConstants.DESC, "你已上传企业证人信息，请耐心等待审核结果");
-            } else {
-                map.put(AuthConstants.CODE, StateCode.Ok);
-                map.put(AuthConstants.DESC, "OK");
-            }
-        }
-
-
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
     }
 
 }

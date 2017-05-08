@@ -1,5 +1,8 @@
 package cn.getcube.develop.entity;
 
+import com.alibaba.fastjson.JSONObject;
+import com.sun.org.apache.regexp.internal.RE;
+
 /**
  * Created by Administrator on 2016/3/14.
  */
@@ -263,6 +266,37 @@ public class CertifiedEntity {
 
     public void setPassport(String passport) {
         this.passport = passport;
+    }
+
+    public JSONObject toJsonEnterprise(){
+        JSONObject json = new JSONObject();
+        json.put("id",this.id);
+        json.put("companyName",this.companyName);
+        json.put("companyAddress",this.companyAddress);
+        json.put("licenseNum",this.licenseNum);
+        json.put("licenseImg",this.licenseImg);
+        json.put("agencyNum",this.agencyNum);
+        json.put("agencyImg",this.agencyImg);
+        json.put("taxNum",this.taxNum);
+        json.put("taxImg",this.taxImg);
+        json.put("corporate",this.corporate);
+        json.put("companyPhone",this.companyPhone);
+        json.put("companyWebsite",this.companyWebsite);
+        json.put("userId",this.userId);
+        return json;
+    }
+
+    public JSONObject toJsonPersonal(){
+        JSONObject json = new JSONObject();
+        json.put("id",this.id);
+        json.put("plName",this.plName);
+        json.put("plType",this.plType);
+        json.put("plCardNum",this.plCardNum);
+        json.put("plPositiveImg",this.plPositiveImg);
+        json.put("plSideImg",this.plSideImg);
+        json.put("plHidnumber",this.plHidnumber);
+        json.put("passport",this.passport);
+        return json;
     }
 
     @Override

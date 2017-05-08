@@ -11,8 +11,8 @@ package cn.getcube.develop;
 public enum StateCode {
     Ok(200),
     AUTH_ERROR_100(100),
-    ParamMiss(700),                     //参数缺失
     TokenFailed(800),                   //token失效
+    SmsFailed(801),                     //手机验证吗无效或已被使用
 
     AUTH_ERROR_9999(9999),              //短信发送失败
     AUTH_ERROR_10000(10000),            //无使用权限
@@ -36,7 +36,7 @@ public enum StateCode {
     AUTH_ERROR_10018(10018),            //信息验证失败
     AUTH_ERROR_10019(10019),            //信息已存在
     AUTH_ERROR_10020(10020),            //账户信息认证未通过
-    AUTH_ERROR_10021(10021),           //用户不存在
+    AUTH_ERROR_10021(10021),            //用户不存在
     AUTH_ERROR_10022(10022),            //手机格式错误
     AUTH_ERROR_10023(10023),            //邮箱已被注册
     AUTH_ERROR_10024(10024),            //手机已被注册
