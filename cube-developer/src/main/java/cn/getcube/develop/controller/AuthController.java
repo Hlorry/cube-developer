@@ -11,8 +11,6 @@ import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
 import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +43,7 @@ public class AuthController {
     private CertifiedService certifiedService;
     @Resource
     private UserDao userDao;
+
 
     @RequestMapping(value = "/certified/find", method = RequestMethod.POST)
     public ModelAndView certifiedFind(HttpServletRequest request, HttpServletResponse response,
@@ -175,7 +174,7 @@ public class AuthController {
             EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
             return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
         } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
-            SendMSMUtils.postRequest(userEntity.getPhone(), null);
+            SendMSMUtils.postRequest(account,null,1);
             return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
         } else {
             return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
@@ -215,37 +214,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * 手机验证接口
-     * @param actmd5
-     * @param version
-     * @return
-     */
-    @RequestMapping(value = "/phone/activation", method = {RequestMethod.POST, RequestMethod.GET})
-    public BaseResult phoneActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
-                                 @RequestParam(name = "version", required = false) String version) {
-        String value = jc.get(actmd5);
-        if (value != null && actmd5.length() == 6) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setId(Integer.valueOf(value));
-            userEntity.setUpdate_time(new Date());
-            userEntity.setActivation(1);
-            int updateUser = userDao.updateUser(userEntity);
-            if (updateUser > 0) {
-                //删除验证reidskey
-                jc.del(actmd5);
-                return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
-            } else {
-                return BaseResult.build(StateCode.AUTH_ERROR_10021, "用户不存在");
-            }
-        } else if (Objects.isNull(value)) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10012, "Verify expired!");
-        } else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10000, "无权限使用");
-        }
-    }
-
-
 
     /**
      * 密码重置验证邮件或手机发送
@@ -284,8 +252,8 @@ public class AuthController {
             EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
             return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
         } else {
-            String postRequest = SendMSMUtils.postRequest(userEntity.getPhone(), null);
-            if (Objects.nonNull(postRequest)) {
+            int postRequest = SendMSMUtils.postRequest(account,null,4);
+            if (200==postRequest) {
                 return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
             } else {
                 return BaseResult.build(StateCode.AUTH_ERROR_9999, "SMS send failure");
