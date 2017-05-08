@@ -1,6 +1,7 @@
 package cn.getcube.develop.service.Impl;
 
 import cn.getcube.develop.AppConstants;
+import cn.getcube.develop.StateCode;
 import cn.getcube.develop.dao.developes.AppDao;
 import cn.getcube.develop.dao.developes.NodeDao;
 import cn.getcube.develop.dao.developes.UserDao;
@@ -10,6 +11,7 @@ import cn.getcube.develop.para.AppInfo;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.service.AppCacheService;
 import cn.getcube.develop.service.AppService;
+import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.Md5Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,9 +56,10 @@ public class AppServiceImpl implements AppService {
     }
 
     @Transactional("transactionManager")
-    public Map<String, String> createApp(AppPara appPara) {
-        Map<String, String> map = new HashMap<>();
-        
+    public DataResult<Map<String, Object>> createApp(AppPara appPara) {
+        Map<String, Object> map = new HashMap<>();
+        DataResult<Map<String, Object>> dataResult = new DataResult<>();
+
         List<String> ids=appDao.getAllUseid();
 		List<Map<String,Integer>> useids=new ArrayList<>();
 		int max=0;
@@ -77,8 +80,8 @@ public class AppServiceImpl implements AppService {
         
         try {
             if (null != appDao.isAppNameExits(appPara)) {
-                map.put("errcode", "10088");
-                map.put("errmsg", "应用名称已经存在");
+                dataResult.setCode(StateCode.APP_NAME_EXIST.getCode());
+                dataResult.setDesc("app name is exist.");
             } else {
                 String appid = Md5Helper.MD5.getMD516(new Date().toString());
                 appPara.setAppId(UUID.randomUUID().toString().replaceAll("-", ""));
@@ -105,8 +108,10 @@ public class AppServiceImpl implements AppService {
                 appPara.setEnvironment(1);
                 appPara.setCheckType(0);
                 appDao.createApp(appPara);
-                map.put("state", "200");
-                map.put("appId", appPara.getAppId());
+                map.put("app", appPara);
+                dataResult.setCode(StateCode.Ok.getCode());
+                dataResult.setDesc("Ok");
+                dataResult.setData(map);
                 
                 //随机获取一个默认测试节点
                 Integer nodeid=nodeDao.getOneDefaultTestNode();
@@ -124,37 +129,43 @@ public class AppServiceImpl implements AppService {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            map.put("errcode", "10089");
-            map.put("errmsg", "create app error");
+            dataResult.setCode(StateCode.APP_CREATE_ERROR.getCode());
+            dataResult.setDesc("create app error");
         }
-        return map;
+        return dataResult;
     }
 
     @Override
-    public Map<String, String> modifyApp(AppPara appPara) {
-        Map<String, String> map = new HashMap<>();
+    public DataResult<Map<String, Object>> modifyApp(AppPara appPara) {
+        DataResult<Map<String, Object>> dataResult = new DataResult<>();
+        Map<String, Object> map = new HashMap<>();
         try {
             if (null != appDao.isAppNameExitsByAppId(appPara)) {
-                map.put("errcode", "10088");
-                map.put("errmsg", "应用名称已经存在");
+                dataResult.setCode(StateCode.APP_NAME_EXIST.getCode());
+                dataResult.setDesc("app name is exist.");
             } else {
                 appPara.setModifyTime(new Date());
                 appDao.modifyApp(appPara);
-                map.put("state", "200");
-                map.put("appId", String.valueOf(appPara.getAppId()));
+                AppEntity appEntity = appDao.queryAppByAppId(appPara);
+                map.put("app", appEntity);
+                dataResult.setCode(StateCode.Ok.getCode());
+                dataResult.setDesc("Ok.");
+                dataResult.setData(map);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            map.put("errcode", "10089");
-            map.put("errmsg", "modify app error");
+            dataResult.setCode(StateCode.APP_MODIFY_ERROR.getCode());
+            dataResult.setDesc("modify app error");
         }
         //更新缓存
         appCache.refreshAppinfo(appPara.getAppId());
-        return map;
+        return dataResult;
     }
 
     @Override
-    public Map<String, String> deleteApp(String appId, String appName, String password) {
+    public DataResult<Map<String, Object>> deleteApp(String appId, String appName, String password) {
+        Map<String, Object> map = new HashMap<>();
+        DataResult<Map<String, Object>> dataResult = new DataResult<>();
         // 判断用户输入的应用名称是否和应用ID匹配
         // 如果不匹配返回
         try {
@@ -166,10 +177,9 @@ public class AppServiceImpl implements AppService {
             appPara.setTest_appid(info.getTest_appid());
             AppEntity appEntity = appDao.queryAppByAppId(appPara);
             if (!appEntity.getAppName().equals(appName)) {
-                Map<String, String> map = new HashMap<>();
-                map.put("code", "4005");
-                map.put("msg", "应用名称不匹配");
-                return map;
+                dataResult.setCode(StateCode.APP_NAME_NOT_MATCH.getCode());
+                dataResult.setDesc("app name is not match.");
+                return dataResult;
             }
             UserEntity ue = new UserEntity();
             ue.setId(appEntity.getUserId());
@@ -177,34 +187,34 @@ public class AppServiceImpl implements AppService {
             // 判断用户密码是否正确
             // 如果不正确返回
             if (!ue.getPassword().equals(password)) {
-                Map<String, String> map = new HashMap<>();
-                map.put("code", "4005");
-                map.put("msg", "登录密码不匹配");
-                return map;
+                dataResult.setCode(StateCode.APP_LOGIN_PWD_NOT_MATCH.getCode());
+                dataResult.setDesc("login pwd is not match.");
+                return dataResult;
             }
             // 根据应用ID进行删除操作
-            Map<String, String> map = new HashMap<>();
             try {
 				appDao.deleteApp(appPara);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-            map.put("code", "4000");
-            map.put("msg", "成功");
+			dataResult.setCode(StateCode.Ok.getCode());
+            dataResult.setDesc("Ok.");
             appCache.delAppInfo(info.getAppid());
-            return map;
+            return dataResult;
         } catch (Exception exception) {
         	exception.printStackTrace();
-            Map<String, String> map = new HashMap<>();
-            map.put("code", "4006");
-            map.put("msg", "删除应用出错");
-            return map;
+            //map.put("code", "4006");
+            //map.put("msg", "删除应用出错");
+            dataResult.setCode(StateCode.Unknown.getCode());
+            dataResult.setDesc("Unknown error");
+            return dataResult;
         }
     }
 
     @Override
-    public Map<String, Object> updateEnvironment(String environment, String appId, Integer userId) {
+    public DataResult<Map<String, Object>> updateEnvironment(String environment, String appId, Integer userId) {
         AppPara appPara = new AppPara();
+        DataResult<Map<String, Object>> dataResult = new DataResult<>();
 
         if (environment != null) {
             appPara.setEnvironment(Integer.parseInt(environment));
@@ -216,46 +226,41 @@ public class AppServiceImpl implements AppService {
         userEntity.setId(userId);
         UserEntity user = userDao.queryUser(userEntity);
         if (user.getBiz_verify() == 0) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("code", 10020);
-            map.put("msg", "帐号认证审核中");
-            return map;
+            dataResult.setCode(StateCode.AUTH_ERROR_10020.getCode());
+            dataResult.setDesc("帐号认证审核中");
+            return dataResult;
         }
         Integer integer = appDao.updateEnvironment(appPara);
         if (integer == null) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("code", 4006);
-            map.put("msg", "申请失败");
-            return map;
+            dataResult.setCode(StateCode.APP_UPDATE_ENVIRONMENT_ERROR.getCode());
+            dataResult.setDesc("update fail");
+            return dataResult;
         } else if (integer > 0) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("code", 200);
-            map.put("msg", "成功");
+            dataResult.setCode(StateCode.Ok.getCode());
+            dataResult.setDesc("Ok.");
           //更新缓存
             appCache.refreshAppinfo(appId);
-            return map;
+            return dataResult;
         } else {
-            Map<String, Object> map = new HashMap<>();
-            map.put("code", 100);
-            map.put("msg", "未知错误");
-            return map;
+            dataResult.setCode(StateCode.Unknown.getCode());
+            dataResult.setDesc("Unknown error");
+            return dataResult;
         }
     }
 
     @Override
-    public Map<String, String> avatarApp(AppPara appPara) {
+    public DataResult<Map<String, Object>> avatarApp(AppPara appPara) {
+        DataResult<Map<String, Object>> dataResult = new DataResult<>();
         try {
             appDao.avatarAppByAppId(appPara);
-            Map<String, String> map = new HashMap<>();
-            map.put("code", "200");
-            map.put("msg", "成功");
+            dataResult.setCode(StateCode.Ok.getCode());
+            dataResult.setDesc("Ok.");
             appCache.refreshAppinfo(appPara.getAppId());
-            return map;
+            return dataResult;
         } catch (Exception e) {
-            Map<String, String> map = new HashMap<>();
-            map.put("code", "4006");
-            map.put("msg", "出错");
-            return map;
+            dataResult.setCode(StateCode.Unknown.getCode());
+            dataResult.setDesc("Unknown error.");
+            return dataResult;
         }
 
     }

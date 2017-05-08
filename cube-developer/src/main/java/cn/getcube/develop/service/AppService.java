@@ -2,6 +2,7 @@ package cn.getcube.develop.service;
 
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.para.AppPara;
+import cn.getcube.develop.utils.DataResult;
 
 import java.util.List;
 import java.util.Map;
@@ -14,15 +15,15 @@ public interface AppService {
 
     List<AppEntity> queryAllApps(AppPara appPara);
 
-    Map<String, String> createApp(AppPara appPara);
+    DataResult<Map<String, Object>> createApp(AppPara appPara);
 
-    Map<String, String> modifyApp(AppPara appPara);
+    DataResult<Map<String, Object>> modifyApp(AppPara appPara);
 
-    Map<String, String> avatarApp(AppPara appPara);
+    DataResult<Map<String, Object>> avatarApp(AppPara appPara);
 
-    Map<String, String> deleteApp(String appId, String appName, String password);
+    DataResult<Map<String, Object>> deleteApp(String appId, String appName, String password);
 
-    Map<String, Object> updateEnvironment(String environment, String appId, Integer userId);
+    DataResult<Map<String, Object>> updateEnvironment(String environment, String appId, Integer userId);
     
     String generateUseId(int length);
     

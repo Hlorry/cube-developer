@@ -32,7 +32,19 @@ public enum StateCode {
     AUTH_ERROR_10018(10018),            //信息验证失败
     AUTH_ERROR_10019(10019),            //信息已存在
     AUTH_ERROR_10020(10020),            //账户信息认证未通过
-    AUTH_ERROR_10021(10021);            //用户不存在
+    AUTH_ERROR_10021(10021),            //用户不存在
+
+    Unknown(20000),                     //未知错误
+    APP_NAME_EXIST(10088),              //应用名称已存在
+    APP_CREATE_ERROR(10089),            //创建应用出错
+    APP_MODIFY_ERROR(10090),            //修改应用信息出错
+    APP_QUERY_PARAM_ERROR(10091),       //查询参数错误
+
+    APP_UPLOAD_AVATAR_ERROR(10092),     //删除应用图标出错
+    APP_UPDATE_ENVIRONMENT_ERROR(10093),      //环境更新失败
+    APP_NAME_NOT_MATCH(10094),          //应用名称不匹配
+    APP_LOGIN_PWD_NOT_MATCH(10095);    //登陆密码不匹配
+
 
     private int code;
 
