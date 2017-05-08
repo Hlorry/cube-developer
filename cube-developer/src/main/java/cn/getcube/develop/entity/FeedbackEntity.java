@@ -6,7 +6,7 @@ public class FeedbackEntity {
 	private String title;
 	private String content;
 	private String phone;
-	private String createtime;
+	private String createTime;
 	public int getId() {
 		return id;
 	}
@@ -31,11 +31,22 @@ public class FeedbackEntity {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-	public String getCreatetime() {
-		return createtime;
+
+	public String getCreateTime() {
+		return createTime;
 	}
-	public void setCreatetime(String createtime) {
-		this.createtime = createtime;
+
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
+	}
+
+	public FeedbackEntity(int id, int userId, String title, String content, String phone, String createTime) {
+		this.id = id;
+		this.userId = userId;
+		this.title = title;
+		this.content = content;
+		this.phone = phone;
+		this.createTime = createTime;
 	}
 
 	public int getUserId() {
@@ -46,14 +57,6 @@ public class FeedbackEntity {
 		this.userId = userId;
 	}
 
-	public FeedbackEntity(int id, int userId, String title, String content, String phone, String createtime) {
-		this.id = id;
-		this.userId = userId;
-		this.title = title;
-		this.content = content;
-		this.phone = phone;
-		this.createtime = createtime;
-	}
 
 	public FeedbackEntity() {
 		super();

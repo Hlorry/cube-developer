@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
 /**
@@ -24,6 +25,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addUser(UserEntity userEntity) {
         userDao.addUser(userEntity);
+    }
+
+
+    @Override
+    public List<UserEntity> queryUsers(UserEntity userEntity) {
+        return userDao.queryUsers(userEntity);
     }
 
     @Override

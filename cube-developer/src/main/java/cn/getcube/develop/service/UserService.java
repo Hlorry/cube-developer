@@ -2,6 +2,8 @@ package cn.getcube.develop.service;
 
 import cn.getcube.develop.entity.UserEntity;
 
+import java.util.List;
+
 /**
  * Created by SubDong on 2016/3/8.
  */
@@ -18,6 +20,13 @@ public interface UserService {
     /**
      * 多条件查询用户  可通过id 或 name 或 phone 或 email 查询用户信息
      *
+     * @param userEntity
+     * @return
+     */
+    List<UserEntity> queryUsers(UserEntity userEntity);
+
+    /**
+     * 返回单个用户信息
      * @param userEntity
      * @return
      */

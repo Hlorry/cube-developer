@@ -2,6 +2,8 @@ package cn.getcube.develop.dao.developes;
 
 import cn.getcube.develop.entity.UserEntity;
 
+import java.util.List;
+
 /**
  * Created by SubDong on 2016/3/8.
  */
@@ -18,6 +20,8 @@ public interface UserDao {
      * @param userEntity
      * @return
      */
+    List<UserEntity> queryUsers(UserEntity userEntity);
+
     UserEntity queryUser(UserEntity userEntity);
 
     /**

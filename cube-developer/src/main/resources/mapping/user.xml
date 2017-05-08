@@ -4,7 +4,7 @@
 
 <mapper namespace="cn.getcube.develop.dao.developes.UserDao">
 
-    <select id="queryUser" resultType="userEntity" parameterType="userEntity">
+    <select id="queryUsers" resultType="userEntity" parameterType="userEntity">
         SELECT id, name, password, email, phone, usertype, way, create_time, update_time, activation,
         biz_verify, phone_verify, avatar FROM
         d_user_password WHERE 1=1
@@ -22,6 +22,21 @@
         </if>
         <if test="avatar != null and avatar != ''">
             and avatar = #{avatar}
+        </if>
+    </select>
+
+    <select id="queryUser" resultType="userEntity" parameterType="userEntity">
+        SELECT id, name, password, email, phone, usertype, way, create_time, update_time, activation,
+        biz_verify, phone_verify, avatar FROM
+        d_user_password WHERE 1=1
+        <if test="id != null and id != 0">
+            and id = #{id}
+        </if>
+        <if test="email != null and email != ''">
+            and email = #{email}
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
         </if>
     </select>
 

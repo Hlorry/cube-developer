@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.getcube.develop.dao.developes.FeedbackDao">
-    <insert id="insertFeedback" parameterType="FeedbackEntity">
-    	insert into t_feedback (id,title,content,phone,createtime,user_id) values(0,#{title},#{content},#{phone},now(),#{userId})
+    <insert id="insertFeedback" parameterType="cn.getcube.develop.entity.FeedbackEntity" keyProperty="id" useGeneratedKeys="true">
+    	insert into t_feedback (title,content,phone,createtime,user_id) values(#{title},#{content},#{phone},#{createTime},#{userId})
     </insert>
 </mapper>

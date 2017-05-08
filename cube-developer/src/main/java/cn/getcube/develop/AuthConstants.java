@@ -53,7 +53,11 @@ public interface AuthConstants {
     //头像上次失败
     String FACE_UPLOAD = "face upload failed";
 
+    //注销失败
     String LOGOUT_ERROR = "logout error";
+
+    //查无此信息
+    String QUERY_NO_DATA = "no data";
 
     /**
      * 返回code信息

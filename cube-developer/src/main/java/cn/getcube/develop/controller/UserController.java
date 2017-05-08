@@ -1,7 +1,6 @@
 package cn.getcube.develop.controller;
 
 import cn.getcube.develop.AuthConstants;
-import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.UserEntity;
@@ -15,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.view.AbstractView;
-import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
@@ -109,46 +106,36 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    public DataResult<UserEntity> product(HttpServletRequest request, HttpServletResponse response,
+    @TokenVerify
+    public DataResult<JSONObject> product(HttpServletRequest request, HttpServletResponse response,
                                           @RequestParam(name = "token", required = false) String token,
                                           @RequestParam(name = "version", required = false) String version,
                                           @RequestParam(name = "id", required = false) Integer id,
                                           @RequestParam(name = "name", required = false) String name,
                                           @RequestParam(name = "email", required = false) String email,
-                                          @RequestParam(name = "phone", required = false) String phone) {
-        AbstractView jsonView = new MappingJackson2JsonView();
-        Map<String, Object> map = new HashMap<>();
-        if (token != null) {
-            if (!jc.exists(token)) {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10015);
-                map.put(AuthConstants.DESC, "token become invalid");
-                map.put("token", token);
-                jsonView.setAttributesMap(map);
-                return new DataResult<>();
-            }
-        }
-
+                                          @RequestParam(name = "phone", required = false) String phone,
+                                          UserEntity userSession) {
         UserEntity userEntity = new UserEntity();
-        userEntity.setId(id);
-        userEntity.setName(name);
-        userEntity.setEmail(email);
-        userEntity.setPhone(phone);
-
-        UserEntity user = userService.queryUser(userEntity);
-
-
-        if (Objects.isNull(user)) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008);
-            map.put(AuthConstants.DESC, "no such check information");
-
-            jsonView.setAttributesMap(map);
-            return new DataResult<>();
+        if(id != null){
+            userEntity.setId(id);
         }
-        if (user.getAvatar() != null) user.setAvatar(HttpUriCode.HTTP_CODE_URI + user.getAvatar());
-        map.put("cube", user);
+        if(name != null && !name.isEmpty()){
+            userEntity.setName(name);
+        }
+        if(email != null && !email.isEmpty()){
+            userEntity.setEmail(email);
+        }
+        if(phone != null && !phone.isEmpty()){
+            userEntity.setPhone(phone);
+        }
 
-        jsonView.setAttributesMap(map);
-        return new DataResult<>();
+        List<UserEntity> users = userService.queryUsers(userEntity);
+        if (Objects.isNull(users)) {
+            return new DataResult<>(StateCode.AUTH_ERROR_10008.getCode(),AuthConstants.QUERY_NO_DATA);
+        }
+       JSONObject jsonObject = new JSONObject();
+        jsonObject.put("users",users);
+        return new DataResult<JSONObject>(jsonObject);
 
     }
 
@@ -163,7 +150,6 @@ public class UserController {
                                          @RequestParam(name = "targetUrl", required = false) String targetUrl,
                                          @RequestParam(name = "username", required = true) String username,
                                          @RequestParam(name = "password", required = true) String password) throws UnsupportedEncodingException {
-//        Map<String, Object> map = new HashMap<>();
         UserEntity userEntity = new UserEntity();
         if (username == null || username.isEmpty()) {
             return new DataResult<>(StateCode.AUTH_ERROR_10016.getCode(), AuthConstants.NULL_NAME);
@@ -303,28 +289,28 @@ public class UserController {
 
     /**
      * 头像上传
-     *
-     * @param request
      * @param token
      * @param version
      * @return
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<UserEntity> upload(
+    public DataResult<JSONObject> upload(
                                @RequestParam(name = "token", required = true) String token,
-                               @RequestParam(name = "avatar", required = true) MultipartFile avatar,
+                               @RequestParam(name = "file", required = true) MultipartFile file,
                                @RequestParam(name = "version", required = false) String version,
                                 UserEntity userSession) {
-        Map<String, Object> map = new HashMap<>();
-            String avatarUrl = FileUploadUtils.uploadFile(avatar, 1);
+            String avatarUrl = FileUploadUtils.uploadFile(file, 1);
             UserEntity userEntity = new UserEntity();
             userEntity.setUpdate_time(new Date());
             userEntity.setAvatar(avatarUrl);
             userEntity.setId(userSession.getId());
             int updateUser = userService.updateUser(userEntity);
             if (updateUser > 0) {
-                return new DataResult<>(userEntity);
+                UserEntity user = userService.queryUser(userEntity);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("user",user);
+                return new DataResult<>(jsonObject);
             } else {
                 return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.FACE_UPLOAD);
             }
