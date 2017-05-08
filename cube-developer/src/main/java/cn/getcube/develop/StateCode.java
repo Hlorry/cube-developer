@@ -11,6 +11,10 @@ package cn.getcube.develop;
 public enum StateCode {
     Ok(200),
     AUTH_ERROR_100(100),
+    ParamMiss(700),                     //参数缺失
+    TokenFailed(800),                   //token失效
+
+    AUTH_ERROR_9999(9999),              //短信发送失败
     AUTH_ERROR_10000(10000),            //无使用权限
     AUTH_ERROR_10001(10001),            //注册失败
     AUTH_ERROR_10002(10002),            //账号或密码错误
@@ -32,9 +36,12 @@ public enum StateCode {
     AUTH_ERROR_10018(10018),            //信息验证失败
     AUTH_ERROR_10019(10019),            //信息已存在
     AUTH_ERROR_10020(10020),            //账户信息认证未通过
-    AUTH_ERROR_10021(10021),            //用户不存在
+    AUTH_ERROR_10021(10021),           //用户不存在
+    AUTH_ERROR_10022(10022),            //手机格式错误
+    AUTH_ERROR_10023(10023),            //邮箱已被注册
+    AUTH_ERROR_10024(10024),            //手机已被注册
 
-    Unknown(20000),                     //未知错误
+    Unknown(20001),                     //未知错误
     APP_NAME_EXIST(10088),              //应用名称已存在
     APP_CREATE_ERROR(10089),            //创建应用出错
     APP_MODIFY_ERROR(10090),            //修改应用信息出错
@@ -43,7 +50,17 @@ public enum StateCode {
     APP_UPLOAD_AVATAR_ERROR(10092),     //删除应用图标出错
     APP_UPDATE_ENVIRONMENT_ERROR(10093),      //环境更新失败
     APP_NAME_NOT_MATCH(10094),          //应用名称不匹配
-    APP_LOGIN_PWD_NOT_MATCH(10095);    //登陆密码不匹配
+    APP_LOGIN_PWD_NOT_MATCH(10095),    //登陆密码不匹配
+
+
+
+
+
+
+
+
+
+    AUTH_ERROR_20000(20000);            //结尾，以后删除
 
 
     private int code;

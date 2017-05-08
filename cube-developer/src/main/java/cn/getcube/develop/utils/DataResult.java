@@ -22,6 +22,13 @@ public class DataResult<T> extends BaseResult {
         this(StateCode.Ok.getCode(), desc);
     }
 
+    public DataResult(T data) {
+        this.code = StateCode.Ok.getCode();
+        this.desc = AuthConstants.MSG_OK;
+        this.data = data;
+
+    }
+
     public DataResult(int code, String desc) {
         this.code = code;
         this.desc = desc;

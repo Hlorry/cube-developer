@@ -27,10 +27,21 @@
 
     <!--添加用户-->
     <insert id="addUser" parameterType="userEntity" useGeneratedKeys="true">
-        INSERT INTO d_user_password (name, password, email, usertype, way, create_time, update_time, activation,
-        biz_verify, phone_verify)
-        VALUE (#{name}, #{password}, #{email}, #{usertype}, #{way}, #{create_time}, #{update_time},
-        #{activation}, #{biz_verify}, #{phone_verify})
+        <choose>
+            <when test="email != null">
+                INSERT INTO d_user_password (name, password, email, usertype, way, create_time, update_time, activation,
+                biz_verify, phone_verify)
+                VALUE (#{name}, #{password}, #{email}, #{usertype}, #{way}, #{create_time}, #{update_time},
+                #{activation}, #{biz_verify}, #{phone_verify})
+            </when>
+            <otherwise>
+                INSERT INTO d_user_password (name, password, usertype, way, create_time, update_time, activation,
+                biz_verify, phone_verify,phone)
+                VALUE (#{name}, #{password}, #{usertype}, #{way}, #{create_time}, #{update_time},
+                #{activation}, #{biz_verify}, #{phone_verify},#{phone})
+            </otherwise>
+        </choose>
+
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select LAST_INSERT_ID() AS userid
         </selectKey>

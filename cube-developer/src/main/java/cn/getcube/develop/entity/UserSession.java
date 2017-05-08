@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by SubDong on 2016/3/9.
  */
-public class UserEntity {
+public class UserSession {
 
     private Integer id;
 
@@ -192,6 +192,4 @@ public class UserEntity {
                 ", avatar='" + avatar + '\'' +
                 '}';
     }
-
-
 }
