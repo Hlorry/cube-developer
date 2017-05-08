@@ -7,5 +7,5 @@ public interface FeedbackService {
 	 * 插入一条反馈数据
 	 * @param feedback
 	 */
-	public void add(FeedbackEntity feedback);
+	void add(FeedbackEntity feedback);
 }

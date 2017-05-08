@@ -1,8 +1,9 @@
 package cn.getcube.develop.service;
 
+import cn.getcube.develop.entity.SdkEntity;
+
 import java.util.List;
-import java.util.Map;
 
 public interface SdkService {
-	List<Map<String,String>> selectNewestSdk();
+	List<SdkEntity> selectNewestSdk();
 }

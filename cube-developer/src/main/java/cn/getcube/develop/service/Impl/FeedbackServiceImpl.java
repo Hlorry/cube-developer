@@ -3,12 +3,14 @@ package cn.getcube.develop.service.Impl;
 import cn.getcube.develop.dao.developes.FeedbackDao;
 import cn.getcube.develop.entity.FeedbackEntity;
 import cn.getcube.develop.service.FeedbackService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService{
-	@Autowired
+
+	@Resource
 	private FeedbackDao feedbackDao;
 
 	@Override

@@ -40,6 +40,8 @@ public enum StateCode {
     AUTH_ERROR_10022(10022),            //手机格式错误
     AUTH_ERROR_10023(10023),            //邮箱已被注册
     AUTH_ERROR_10024(10024),            //手机已被注册
+    AUTH_ERROR_10025(10025),            //注销失败
+    AUTH_ERROR_10026(10026),            //查询失败
 
     Unknown(20001),                     //未知错误
     APP_NAME_EXIST(10088),              //应用名称已存在

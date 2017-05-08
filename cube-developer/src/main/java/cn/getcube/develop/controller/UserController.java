@@ -3,6 +3,7 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
+import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
 import cn.getcube.develop.utils.*;
@@ -14,16 +15,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.AbstractView;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -191,7 +189,7 @@ public class UserController {
 //            map.put("data", targetUrl);
             //TODO  此处加 tn_ 标注token 特殊性，后期优化删除，现在不动
             String uuid = "tn_" + UUID.randomUUID().toString().replaceAll("-", "");
-            jc.set("token", uuid);
+            jc.set("token"+userEntity.getId(), uuid);
 
             UserEntity userEntity1 = userService.queryUser(userEntity);
             jc.set(uuid, JSON.toJSONString(userEntity1));
@@ -214,31 +212,20 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public ModelAndView logout(HttpServletRequest request, HttpServletResponse response,
-                               @RequestParam(name = "version", required = false) String version) {
-
-        String token = request.getParameter("token");
-        if (token == null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("cube_develops_token")) {
-                    token = cookie.getValue();
-                }
-                Cookie cookie1 = new Cookie(cookie.getName(), null);
-                cookie1.setPath("/");
-                cookie1.setMaxAge(0);
-                response.addCookie(cookie1);
-            }
-        }
-
-        jc.del(token);
-
+    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @TokenVerify
+    public BaseResult logout(HttpServletResponse response,
+                               @RequestParam(name = "token", required = true) String token,
+                               @RequestParam(name = "version", required = false) String version,
+                               UserEntity userSession) {
         try {
-            response.sendRedirect("/route/login");
-        } catch (IOException e) {
-            e.printStackTrace();
+            jc.del(token);
+            jc.del("token"+userSession.getId());
+            return new BaseResult();
+        } catch (Exception e) {
+            return new BaseResult(StateCode.AUTH_ERROR_10025.getCode(),AuthConstants.LOGOUT_ERROR);
         }
-        return null;
+
     }
 
     /**
@@ -247,40 +234,28 @@ public class UserController {
      * @param request
      * @param response
      * @param token
-     * @param id
      * @param name
      * @param version
      * @return
      */
-    @RequestMapping(value = "/updateUserName", method = RequestMethod.POST)
-    public ModelAndView param(HttpServletRequest request, HttpServletResponse response,
+    @RequestMapping(value = "/update/name", method = RequestMethod.POST)
+    @TokenVerify
+    public DataResult<UserEntity> updateUserName(HttpServletRequest request, HttpServletResponse response,
                               @RequestParam(name = "token", required = true) String token,
-                              @RequestParam(name = "id", required = true) Integer id,
                               @RequestParam(name = "name", required = true) String name,
-                              @RequestParam(name = "version", required = false) String version) {
-        AbstractView jsonView = new MappingJackson2JsonView();
+                              @RequestParam(name = "version", required = false) String version,
+                              UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
-        if (token != null && !token.equals("")) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setId(id);
-            userEntity.setName(name);
-            userEntity.setUpdate_time(new Date());
-            int updateUser = userService.updateUser(userEntity);
-            if (updateUser > 0) {
-                map.put(AuthConstants.CODE, StateCode.Ok);
-                map.put(AuthConstants.DESC, "修改成功");
-                jsonView.setAttributesMap(map);
-            } else {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10017);
-                map.put(AuthConstants.DESC, "修改失败");
-                jsonView.setAttributesMap(map);
-            }
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userSession.getId());
+        userEntity.setName(name);
+        userEntity.setUpdate_time(new Date());
+        int updateUser = userService.updateUser(userEntity);
+        if (updateUser > 0) {
+            return new DataResult<UserEntity>(userEntity);
         } else {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10000);
-            map.put(AuthConstants.DESC, "无使用权限");
-            jsonView.setAttributesMap(map);
+            return new DataResult<UserEntity>(StateCode.AUTH_ERROR_10017.getCode(),AuthConstants.UPDATE_ERROR);
         }
-        return new ModelAndView(jsonView);
     }
 
     /**
@@ -289,93 +264,70 @@ public class UserController {
      * @param request
      * @param response
      * @param token
-     * @param id
      * @param msmCode
      * @param version
      * @return
      */
-    @RequestMapping(value = "/phoneVer", method = RequestMethod.POST)
-    public ModelAndView param(HttpServletRequest request, HttpServletResponse response,
+    @RequestMapping(value = "/phone/ver", method = RequestMethod.POST)
+    @TokenVerify
+    public DataResult<UserEntity> param(HttpServletRequest request, HttpServletResponse response,
                               @RequestParam(name = "token", required = true) String token,
-                              @RequestParam(name = "id", required = true) Integer id,
                               @RequestParam(name = "phone", required = true) String phone,
                               @RequestParam(name = "msmCode", required = true) String msmCode,
-                              @RequestParam(name = "version", required = false) String version) {
-        AbstractView jsonView = new MappingJackson2JsonView();
-        Map<String, Object> map = new HashMap<>();
-        if (token != null && !token.equals("")) {
-            String codeKey = jc.get(phone + "data");
-            if (codeKey != null && !codeKey.equals("")) {
-                if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
-                    UserEntity userEntity = new UserEntity();
-                    userEntity.setId(id);
-                    userEntity.setPhone(phone);
-                    userEntity.setPhone_verify(1);
-                    userEntity.setUpdate_time(new Date());
-                    int updateUser = userService.updateUser(userEntity);
-                    if (updateUser > 0) {
-                        jc.expire(phone + "data", 1);
-                        map.put(AuthConstants.CODE, StateCode.Ok);
-                        map.put(AuthConstants.DESC, "手机绑定成功");
-                        jsonView.setAttributesMap(map);
-                    } else {
-                        map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10017);
-                        map.put(AuthConstants.DESC, "绑定手机失败，请重试！");
-                        jsonView.setAttributesMap(map);
-                    }
+                              @RequestParam(name = "version", required = false) String version,
+                              UserEntity userSession) {
+
+        String codeKey = jc.get(phone + "data");
+        if (codeKey != null && !codeKey.equals("")) {
+            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(userSession.getId());
+                userEntity.setPhone(phone);
+                userEntity.setPhone_verify(1);
+                userEntity.setUpdate_time(new Date());
+                int updateUser = userService.updateUser(userEntity);
+                if (updateUser > 0) {
+                    jc.expire(phone + "data", 1);
+                    return new DataResult<>(userEntity);
                 } else {
-                    map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10018);
-                    map.put(AuthConstants.DESC, "验证失败！请填写正确的验证信息");
-                    jsonView.setAttributesMap(map);
+                    return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
                 }
             } else {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012);
-                map.put(AuthConstants.DESC, "验证过期");
-                jsonView.setAttributesMap(map);
+                return new DataResult<>(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
             }
         } else {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10000);
-            map.put(AuthConstants.DESC, "无使用权限");
-            jsonView.setAttributesMap(map);
+            return new DataResult<>(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
         }
-        return new ModelAndView(jsonView);
+
     }
 
     /**
      * 头像上传
      *
      * @param request
-     * @param response
      * @param token
-     * @param id
      * @param version
      * @return
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public ModelAndView upload(HttpServletRequest request, HttpServletResponse response,
+    @TokenVerify
+    public DataResult<UserEntity> upload(HttpServletRequest request,
                                @RequestParam(name = "token", required = true) String token,
-                               @RequestParam(name = "id", required = true) Integer id,
                                @RequestParam(name = "avatar", required = true) MultipartFile avatar,
-                               @RequestParam(name = "version", required = false) String version) {
+                               @RequestParam(name = "version", required = false) String version,
+                                UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
-        if (token == null) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10000);
-            map.put(AuthConstants.DESC, "无使用权限");
-        } else {
             String avatarUrl = FileUploadUtils.uploadFile(avatar, 1, request);
             UserEntity userEntity = new UserEntity();
             userEntity.setUpdate_time(new Date());
             userEntity.setAvatar(avatarUrl);
-            userEntity.setId(id);
+            userEntity.setId(userSession.getId());
             int updateUser = userService.updateUser(userEntity);
             if (updateUser > 0) {
-                map.put(AuthConstants.CODE, StateCode.Ok);
-                map.put(AuthConstants.DESC, "头像上传成功");
+                return new DataResult<>(userEntity);
             } else {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10017);
-                map.put(AuthConstants.DESC, "头像上传失败");
+                return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.FACE_UPLOAD);
             }
-        }
-        return new ModelAndView("redirect:/route/personal", map);
     }
+
 }

@@ -35,6 +35,23 @@ public interface AuthConstants {
     //账户或者密码错误
     String USER_PSD_ERROR = "userName or password error";
 
+    //数据修改失败
+    String UPDATE_ERROR = "data update failed";
+
+    //手机绑定失败
+    String PHONE_BINDING_ERROR = "phone binding error";
+
+    //验证失败
+    String VERIFY_FAILED = "verify failed,please again write verify information";
+
+    //验证过期
+    String VERIFY_EXPIRE = "verify has been expired";
+
+    //头像上次失败
+    String FACE_UPLOAD = "face upload failed";
+
+    String LOGOUT_ERROR = "logout error";
+
     /**
      * 返回code信息
      */

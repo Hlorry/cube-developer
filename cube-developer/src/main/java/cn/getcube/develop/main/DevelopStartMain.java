@@ -15,7 +15,7 @@ import org.springframework.context.annotation.ImportResource;
  * @since 2017/5/3
  */
 @Configuration
-@ComponentScan("com.getcube.develop.*")
+@ComponentScan("cn.getcube.develop.*")
 @ImportResource(locations = {"classpath:applicationContext.xml", "classpath:spring-mvc.xml"})
 @SpringBootApplication
 public class DevelopStartMain {

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.getcube.develop.dao.developes.SdkDao">
-    <select id="selectNewestSdk" resultType="map">
+    <select id="selectNewestSdk" resultType="cn.getcube.develop.entity.SdkEntity">
     	select * from d_sdk_info where switchs=1
     </select>
 </mapper>

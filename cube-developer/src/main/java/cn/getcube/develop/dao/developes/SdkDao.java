@@ -1,8 +1,9 @@
 package cn.getcube.develop.dao.developes;
 
+import cn.getcube.develop.entity.SdkEntity;
+
 import java.util.List;
-import java.util.Map;
 
 public interface SdkDao {
-	List<Map<String,String>> selectNewestSdk();
+	List<SdkEntity> selectNewestSdk();
 }

@@ -8,7 +8,6 @@ import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
-import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
 import org.springframework.context.annotation.Scope;
@@ -215,6 +214,12 @@ public class AuthController {
         }
     }
 
+    /**
+     * 手机验证接口
+     * @param actmd5
+     * @param version
+     * @return
+     */
     @RequestMapping(value = "/phone/activation", method = {RequestMethod.POST, RequestMethod.GET})
     public BaseResult phoneActivation(@RequestParam(name = "actmd5", required = true) String actmd5,
                                  @RequestParam(name = "version", required = false) String version) {

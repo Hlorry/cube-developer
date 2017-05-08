@@ -2,6 +2,7 @@ package cn.getcube.develop.entity;
 
 public class FeedbackEntity {
 	private int id;
+	private int userId;
 	private String title;
 	private String content;
 	private String phone;
@@ -36,14 +37,24 @@ public class FeedbackEntity {
 	public void setCreatetime(String createtime) {
 		this.createtime = createtime;
 	}
-	public FeedbackEntity(int id, String title, String content, String phone, String createtime) {
-		super();
+
+	public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+
+	public FeedbackEntity(int id, int userId, String title, String content, String phone, String createtime) {
 		this.id = id;
+		this.userId = userId;
 		this.title = title;
 		this.content = content;
 		this.phone = phone;
 		this.createtime = createtime;
 	}
+
 	public FeedbackEntity() {
 		super();
 	}
