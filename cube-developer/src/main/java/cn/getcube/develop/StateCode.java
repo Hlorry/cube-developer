@@ -13,7 +13,9 @@ public enum StateCode {
     AUTH_ERROR_100(100),
     TokenFailed(800),                   //token失效
     SmsFailed(801),                     //手机验证吗无效或已被使用
+    ParamInvalid(900),                   //参数不合法
 
+    AUTH_ERROR_9998(9998),              //手机号格式错误
     AUTH_ERROR_9999(9999),              //短信发送失败
     AUTH_ERROR_10000(10000),            //无使用权限
     AUTH_ERROR_10001(10001),            //注册失败
@@ -42,6 +44,8 @@ public enum StateCode {
     AUTH_ERROR_10024(10024),            //手机已被注册
     AUTH_ERROR_10025(10025),            //注销失败
     AUTH_ERROR_10026(10026),            //查询失败
+
+    AUTH_ERROR_10027(10027),            //验证码错误
 
     Unknown(20001),                     //未知错误
     APP_NAME_EXIST(10088),              //应用名称已存在

@@ -221,7 +221,7 @@ public class AuthController {
             EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
             return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
         } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
-            SendMSMUtils.postRequest(userEntity.getPhone(), null);
+            SendMSMUtils.postRequest(account,null,1);
             return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
         } else {
             return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
@@ -298,8 +298,8 @@ public class AuthController {
             EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
             return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
         } else {
-            String postRequest = SendMSMUtils.postRequest(userEntity.getPhone(), null);
-            if (Objects.nonNull(postRequest)) {
+            int postRequest = SendMSMUtils.postRequest(account,null,4);
+            if (200==postRequest) {
                 return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
             } else {
                 return BaseResult.build(StateCode.AUTH_ERROR_9999, "SMS send failure");

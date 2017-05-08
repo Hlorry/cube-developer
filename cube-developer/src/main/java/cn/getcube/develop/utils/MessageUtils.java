@@ -38,7 +38,7 @@ public class MessageUtils {
                 return false;
             }
         } else {
-            SendMSMUtils.postRequest(user.getPhone(), null);
+            SendMSMUtils.postRequest(user.getPhone(), null,1);
             return true;
         }
     }

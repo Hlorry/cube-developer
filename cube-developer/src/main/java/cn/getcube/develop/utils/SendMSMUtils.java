@@ -1,28 +1,16 @@
 package cn.getcube.develop.utils;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import cn.getcube.develop.utils.redis.RedisKey;
 import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.io.InputStreamReader;
+import java.util.*;
 
 /**
  * Created by Administrator on 2016/4/14.
@@ -30,6 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class SendMSMUtils {
     static JedisCluster jc;
 
+    private static final String CHARSET_UTF_8 = "UTF-8";
     private final HttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
 
     private static Logger log = LoggerFactory.getLogger(HttpClientUtils.class);
@@ -62,52 +51,76 @@ public class SendMSMUtils {
     /**
      * http Post 通用方法 Json传参
      *
-     * @param params
+     * @param message
      * @return
      */
-    public static String postRequest(String phone, String params) {
+    public static int postRequest(String phone, String message,int type) {
         String url = "http://www.mxtong.net.cn/GateWay/Services.asmx/DirectSend";
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(url);
-            httpPost.addHeader("Content-Disposition: form-data;name=media", "application/json; charset=utf-8");
-            httpPost.setHeader("Accept", "application/json");
+        try {
 
             //验证码
             String random = EmailUtils.getStringRandom(6);
 
             String Content;
-            if (params != null && !params.equals("")) {
-                Content = java.net.URLEncoder.encode(params + "【时信互联】", "UTF-8");
+            if (message != null && !message.equals("")) {
+                Content = java.net.URLEncoder.encode(message + "【时信互联】", "UTF-8");
             } else {
                 Content = java.net.URLEncoder.encode(random + "  (验证码)，此验证码仅限于该手机验证；请在5分钟内完成验证，时信将持续为你服务。【时信互联】", "UTF-8");
             }
+            Properties props = new Properties();
+            props.load(new InputStreamReader(SendMSMUtils.class.getClassLoader().getResourceAsStream("SMS.properties"), CHARSET_UTF_8));
 
+            Map<String, Object> map = new HashMap<>();
+            map.put("UserID", props.getProperty("sms.id"));
+            map.put("Account", props.getProperty("sms.account"));
+            map.put("Password", props.getProperty("sms.password"));
+            map.put("SendType", props.getProperty("sms.sendType"));
+            map.put("PostFixNumber", props.getProperty("sms.PostFixNumber"));
+            map.put("SendTime", "");
+            map.put("Phones", phone);
+            map.put("Content", Content);
 
-            List<NameValuePair> data = new ArrayList<>();
-            data.add(new BasicNameValuePair("UserID", "995836"));
-            data.add(new BasicNameValuePair("Account", "admin"));
-            data.add(new BasicNameValuePair("Password", "1JKY7K"));
-            data.add(new BasicNameValuePair("Phones", phone));
-            data.add(new BasicNameValuePair("SendType", "1"));
-            data.add(new BasicNameValuePair("SendTime", ""));
-            data.add(new BasicNameValuePair("PostFixNumber", ""));
-            data.add(new BasicNameValuePair("Content", Content));
-            httpPost.setEntity(new UrlEncodedFormEntity(data, UTF_8));
-            CloseableHttpResponse response = httpClient.execute(httpPost);
+            String request = null;
+            for (int i = 0; i < 3; i++) {
+                request = HttpClientUtils.postRequest(url, map);
+                if(request != null){
+                    break;
+                }
+            }
+            if (request == null) {
+                return -1;
+            }
 
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                jc.set(phone + "data", random);
-                jc.set(phone, "");
-                jc.expire(phone + "data", 5 * 60);
-                jc.expire(phone, 60);
-                return EntityUtils.toString(response.getEntity(), UTF_8);
+            int beginPoint = request.indexOf("<RetCode>");
+            int endPoint = request.indexOf("</RetCode>");
+
+            String substring = request.substring(beginPoint + 9, endPoint);
+            if (substring.equals("Sucess")) {
+                String key="";
+                switch (type){
+                    case 1:
+                        key = RedisKey.SMS_REG;
+                        break;
+                    case 2:
+                        key = RedisKey.SMS_BIND;
+                        break;
+                    case 3:
+                        key = RedisKey.SMS_FIX;
+                        break;
+                    case 4:
+                        key = RedisKey.SMS_RESET;
+                        break;
+                }
+                jc.set(key+phone, random);
+                jc.expire(key+phone, 5 * 60);
+                return 200;
             } else {
-                return null;
+                return 501;
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return -1;
         }
     }
 }
