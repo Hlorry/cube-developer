@@ -2,6 +2,7 @@ package cn.getcube.develop.utils;
 
 import org.apache.commons.mail.HtmlEmail;
 
+import javax.mail.internet.MimeUtility;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -51,7 +52,7 @@ public class EmailUtils {
         email.setCharset(CHARSET_UTF_8);
         email.setStartTLSEnabled(true);
         try {
-            email.setFrom(userName, changeCharSet(from, "GB18030"));
+            email.setFrom(userName, MimeUtility.encodeText(from,MimeUtility.mimeCharset("utf-8"), null));
             email.setSubject(subject);
             email.setHtmlMsg(msg);
             email.addTo(targetEmail);
