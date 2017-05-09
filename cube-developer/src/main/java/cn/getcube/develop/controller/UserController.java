@@ -45,7 +45,7 @@ public class UserController {
                                           @RequestParam(name = "name", required = true) String name,
                                           @RequestParam(name = "account", required = true) String account,
                                           @RequestParam(name = "password", required = true) String password,
-                                          @RequestParam(name = "userType", required = true) Integer userType,
+                                          @RequestParam(name = "userType", required = false) Integer userType,
                                           @RequestParam(name = "way", required = false) Integer way) {
         DataResult<UserEntity> result = new DataResult<>();
         if (name != null && account != null && password != null && userType != null) {
