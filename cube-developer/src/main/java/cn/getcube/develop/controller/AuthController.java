@@ -349,7 +349,6 @@ public class AuthController {
      * 登陆后修改密码
      *
      * @param token
-     * @param id
      * @param oldPwd
      * @param newPwd
      * @param version
@@ -358,14 +357,13 @@ public class AuthController {
     @TokenVerify
     @RequestMapping(value = "/password/update", method = RequestMethod.POST)
     public BaseResult resmailupdateet(@RequestParam(name = "token", required = true) String token,
-                                        @RequestParam(name = "id", required = true) Integer id,
                                         @RequestParam(name = "oldPwd", required = true) String oldPwd,
                                         @RequestParam(name = "newPwd", required = true) String newPwd,
                                         @RequestParam(name = "version", required = false) String version,
                                         UserEntity userSession) {
         BaseResult result = new BaseResult();
         UserEntity userEntity = new UserEntity();
-        userEntity.setId(id);
+        userEntity.setId(userSession.getId());
         UserEntity entity = userDao.queryUser(userEntity);
         MD5 md5 = new MD5.Builder().source(oldPwd).salt(AuthConstants.USER_SALT).build();
         if (entity.getPassword().equals(md5.getMD5())) {
