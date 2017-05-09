@@ -17,8 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -46,7 +44,6 @@ public class UserController {
                                           @RequestParam(name = "password", required = true) String password,
                                           @RequestParam(name = "userType", required = false) Integer userType,
                                           @RequestParam(name = "way", required = false) Integer way) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
         DataResult<UserEntity> result = new DataResult<>();
         if (name != null && account != null && password != null && userType != null) {
 
@@ -199,8 +196,8 @@ public class UserController {
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
     @TokenVerify
     public BaseResult logout(@RequestParam(name = "token", required = true) String token,
-                             @RequestParam(name = "version", required = false) String version,
-                             UserEntity userSession) {
+                               @RequestParam(name = "version", required = false) String version,
+                               UserEntity userSession) {
         try {
             jc.del(token);
             jc.del("token"+userSession.getId());
@@ -215,7 +212,6 @@ public class UserController {
      * 修改账户名称
      *
      * @param token
-     * @param name
      * @param version
      * @return
      */
@@ -224,7 +220,7 @@ public class UserController {
     public DataResult<UserEntity> updateUserName(@RequestParam(name = "token", required = true) String token,
                                                   @RequestParam(name = "name", required = true) String name,
                                                   @RequestParam(name = "version", required = false) String version,
-                                                  UserEntity userSession) {
+                                                 UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userSession.getId());
@@ -249,10 +245,10 @@ public class UserController {
     @RequestMapping(value = "/phone/ver", method = RequestMethod.POST)
     @TokenVerify
     public DataResult<UserEntity> param(@RequestParam(name = "token", required = true) String token,
-                                      @RequestParam(name = "phone", required = true) String phone,
-                                      @RequestParam(name = "msmCode", required = true) String msmCode,
-                                      @RequestParam(name = "version", required = false) String version,
-                                      UserEntity userSession) {
+                              @RequestParam(name = "phone", required = true) String phone,
+                              @RequestParam(name = "msmCode", required = true) String msmCode,
+                              @RequestParam(name = "version", required = false) String version,
+                              UserEntity userSession) {
 
         String codeKey = jc.get(phone + "data");
         if (codeKey != null && !codeKey.equals("")) {
