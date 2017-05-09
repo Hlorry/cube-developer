@@ -16,6 +16,8 @@ public interface AppDao {
 
     void deleteApp(AppPara appPara);
 
+    void delAppNodes(AppPara appPara);
+
     int createApp(AppPara appPara);
 
     void modifyApp(AppPara appPara);

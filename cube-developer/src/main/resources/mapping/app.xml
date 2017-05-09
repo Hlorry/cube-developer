@@ -39,11 +39,15 @@
         update d_app set avatar=#{avatar} where appId = #{appId}
     </update>
 
-    <!-- 删除应用（Remove） -->
-    <update id="deleteApp" parameterType="cn.getcube.develop.para.AppPara">
+    <!--删除app节点 -->
+    <delete id="delAppNodes" parameterType="cn.getcube.develop.para.AppPara">
         delete from t_app_nodes where appid=#{appId} or appid=#{test_appid};
+    </delete>
+
+    <!-- 删除应用（Remove） -->
+    <delete id="deleteApp" parameterType="cn.getcube.develop.para.AppPara">
        	delete from d_app where appId = #{appId};
-    </update>
+    </delete>
 
     
     <delete id="updateEnvironment" parameterType="cn.getcube.develop.para.AppPara">

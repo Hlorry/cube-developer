@@ -13,7 +13,6 @@ import cn.getcube.develop.service.AppCacheService;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.Md5Helper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -194,6 +193,7 @@ public class AppServiceImpl implements AppService {
             // 根据应用ID进行删除操作
             try {
 				appDao.deleteApp(appPara);
+				appDao.delAppNodes(appPara);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
