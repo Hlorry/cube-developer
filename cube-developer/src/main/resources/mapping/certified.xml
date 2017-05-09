@@ -3,8 +3,17 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.getcube.develop.dao.developes.CertifiedDao">
+
     <select id="queryByUserId" resultType="cn.getcube.develop.entity.CertifiedEntity" parameterType="int">
-        select * from d_user_company where userId = #{0} and type=#{1}
+        select id,userId,cpName as companyName,cpAddress as companyAddress,licenseNum,licenseImg,agencyNum,agencyImg,taxNum,taxImg,corporate,cpPhone as companyPhone,cpWebsite as companyWebsite,plName,
+        plType,plCardNum,plPositiveImg,plSideImg,plHidnumber,passport,type
+        from d_user_company where userId = #{0} and type=#{1}
+    </select>
+
+    <select id="queryCertified" resultType="cn.getcube.develop.entity.CertifiedEntity" parameterType="int">
+        select id,userId,cpName as companyName,cpAddress as companyAddress,licenseNum,licenseImg,agencyNum,agencyImg,taxNum,taxImg,corporate,cpPhone as companyPhone,cpWebsite as companyWebsite,plName,
+        plType,plCardNum,plPositiveImg,plSideImg,plHidnumber,passport,type
+        from d_user_company where id = #{id}
     </select>
 
     <insert id="saveCertified" parameterType="cn.getcube.develop.entity.CertifiedEntity">

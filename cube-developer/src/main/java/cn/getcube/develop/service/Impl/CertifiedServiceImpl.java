@@ -17,8 +17,8 @@ public class CertifiedServiceImpl implements CertifiedService {
     private CertifiedDao certifiedDao;
 
     @Override
-    public CertifiedEntity queryCertified(int userId,int type) {
-        return certifiedDao.queryByUserId(userId,type);
+    public CertifiedEntity queryCertified(int id) {
+        return certifiedDao.queryCertified(id);
     }
 
     @Override

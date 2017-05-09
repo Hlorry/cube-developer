@@ -47,7 +47,6 @@ public class AuthController {
      * 通过ID 查询认证信息
      *
      * @param token
-     * @param id
      * @param version
      * @return
      */
@@ -57,19 +56,21 @@ public class AuthController {
                                     @RequestParam(name = "id", required = true) Integer id,
                                     @RequestParam(name = "version", required = false) String version,
                                     UserEntity userSession) {
-        CertifiedEntity ce = certifiedService.queryCertified(id,0);
+        CertifiedEntity ce = certifiedService.queryCertified(id);
         Map<String, Object> map = new HashMap<>();
         if (Objects.isNull(ce)) {
             return BaseResult.build(StateCode.AUTH_ERROR_10008, "No such check information");
         } else {
             //获取uri 邮箱验证时用户访问页面
             //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-
-            ce.setTaxImg(HttpUriCode.HTTP_CODE_URI + ce.getTaxImg());
-            ce.setAgencyImg(HttpUriCode.HTTP_CODE_URI + ce.getAgencyImg());
-            ce.setLicenseImg(HttpUriCode.HTTP_CODE_URI + ce.getLicenseImg());
-            ce.setPlPositiveImg(HttpUriCode.HTTP_CODE_URI + ce.getPlPositiveImg());
-            ce.setPlSideImg(HttpUriCode.HTTP_CODE_URI + ce.getPlSideImg());
+            if(ce.getType()==1){
+                ce.setPlPositiveImg(HttpUriCode.HTTP_CODE_URI + ce.getPlPositiveImg());
+                ce.setPlSideImg(HttpUriCode.HTTP_CODE_URI + ce.getPlSideImg());
+            }else {
+                ce.setTaxImg(HttpUriCode.HTTP_CODE_URI + ce.getTaxImg());
+                ce.setAgencyImg(HttpUriCode.HTTP_CODE_URI + ce.getAgencyImg());
+                ce.setLicenseImg(HttpUriCode.HTTP_CODE_URI + ce.getLicenseImg());
+            }
             map.put("cube", ce);
 
             DataResult<Map<String, Object>> dataResult = new DataResult<>();
@@ -372,6 +373,8 @@ public class AuthController {
             userEntity.setUpdate_time(new Date());
             int updateUser = userDao.updateUser(userEntity);
             if (updateUser > 0) {
+                jc.del("token"+userSession.getId());
+                jc.del(token);
                 result.setCode(AuthConstants.OK);
                 result.setDesc(AuthConstants.MSG_OK);
             } else {
@@ -429,7 +432,7 @@ public class AuthController {
             }
 
             try {
-                CertifiedEntity ce = certifiedService.queryCertified(id,1);
+                CertifiedEntity ce = certifiedService.queryByUserId(id,1);
                 if (Objects.isNull(ce)) {
                     certifiedService.savePersonal(entity);
                     result.setCode(StateCode.Ok.getCode());
