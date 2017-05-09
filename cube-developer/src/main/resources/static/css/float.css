@@ -1,0 +1,55 @@
+.children_left_float:after{
+	content: "";
+	clear: both;
+	display: block;
+	height: 0;
+}
+
+.children_right_float:after{
+	content: "";
+	clear: both;
+	display: block;
+	height: 0;
+}
+
+
+.children_left_float>div,
+.children_left_float>ul,
+.children_left_float>li,
+.children_left_float>dl,
+.children_left_float>dt,
+.children_left_float>dd,
+.children_left_float>ol,
+.children_left_float>a,
+.children_left_float>span,
+.children_left_float>img{
+	float: left;
+}
+
+.children_right_float>div,
+.children_right_float>ul,
+.children_right_float>li,
+.children_right_float>dl,
+.children_right_float>dt,
+.children_right_float>dd,
+.children_right_float>ol,
+.children_right_float>a,
+.children_right_float>span,
+.children_right_float>img{
+	float: right;
+}
+
+
+
+.left_float{
+	float: left;
+}
+.right_float{
+	float: right;
+}
+.clear_by_after:after{
+	content: "";
+	clear: both;
+	display: block;
+	height: 0;
+}

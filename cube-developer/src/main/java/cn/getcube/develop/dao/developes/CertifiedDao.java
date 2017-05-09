@@ -6,7 +6,7 @@ import cn.getcube.develop.entity.CertifiedEntity;
  * Created by Administrator on 2016/3/14.
  */
 public interface CertifiedDao {
-    CertifiedEntity queryByUserId(int userId);
+    CertifiedEntity queryByUserId(int userId,int type);
 
     void saveCertified(CertifiedEntity certified);
 

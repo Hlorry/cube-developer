@@ -8,26 +8,25 @@ import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
+import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
+import org.springframework.asm.Type;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.AbstractView;
-import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static cn.getcube.develop.StateCode.Ok;
 
 /**
  * Created by Administrator on 2016/3/14.
@@ -47,8 +46,6 @@ public class AuthController {
     /**
      * 通过ID 查询认证信息
      *
-     * @param request
-     * @param response
      * @param token
      * @param id
      * @param version
@@ -56,11 +53,11 @@ public class AuthController {
      */
     @RequestMapping(value = "/certified/find", method = RequestMethod.POST)
     @TokenVerify
-    public BaseResult certifiedFind(HttpServletRequest request, HttpServletResponse response,
-                                    @RequestParam(name = "token", required = true) String token,
+    public BaseResult certifiedFind(@RequestParam(name = "token", required = true) String token,
                                     @RequestParam(name = "id", required = true) Integer id,
-                                    @RequestParam(name = "version", required = false) String version) {
-        CertifiedEntity ce = certifiedService.queryCertified(id);
+                                    @RequestParam(name = "version", required = false) String version,
+                                    UserEntity userSession) {
+        CertifiedEntity ce = certifiedService.queryCertified(id,0);
         Map<String, Object> map = new HashMap<>();
         if (Objects.isNull(ce)) {
             return BaseResult.build(StateCode.AUTH_ERROR_10008, "No such check information");
@@ -76,7 +73,7 @@ public class AuthController {
             map.put("cube", ce);
 
             DataResult<Map<String, Object>> dataResult = new DataResult<>();
-            dataResult.setCode(StateCode.Ok.getCode());
+            dataResult.setCode(Ok.getCode());
             dataResult.setDesc("OK.");
             dataResult.setData(map);
             return dataResult;
@@ -90,8 +87,7 @@ public class AuthController {
      */
     @RequestMapping(value = "/certified/queryByUserId", method = RequestMethod.POST)
     @TokenVerify
-    public BaseResult queryByUserIdCertified(HttpServletRequest request, HttpServletResponse response,
-                                             @RequestParam(name = "token", required = true) String token,
+    public BaseResult queryByUserIdCertified(@RequestParam(name = "token", required = true) String token,
                                              @RequestParam(name = "version", required = false) String version,
                                              UserEntity userSession) {
 
@@ -99,10 +95,10 @@ public class AuthController {
         if (token == null) {
             return BaseResult.build(StateCode.AUTH_ERROR_10016, "参数缺失");
         } else {
-            CertifiedEntity certifiedEntity = certifiedService.queryByUserId(userSession.getId());
+            CertifiedEntity certifiedEntity = certifiedService.queryByUserId(userSession.getId(),0);
             if (certifiedEntity != null) {
                 DataResult<Map<String, Object>> dataResult = new DataResult<>();
-                dataResult.setCode(StateCode.Ok.getCode());
+                dataResult.setCode(Ok.getCode());
                 dataResult.setDesc("当前用户已上传企业证人信息，请耐心等待审核结果");
 
                 certifiedEntity.setTaxImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getTaxImg());
@@ -124,8 +120,9 @@ public class AuthController {
      *
      * @return
      */
+    @TokenVerify
     @RequestMapping(value = "/certified/save", method = RequestMethod.POST)
-    public ModelAndView certifiedSave(HttpServletRequest request, HttpServletResponse response,
+    public BaseResult certifiedSave(@RequestParam(name = "token", required = true) String token,
                                       @RequestParam(name = "cpName", required = true) String cpName,
                                       @RequestParam(name = "cpAddress", required = true) String cpAddress,
                                       @RequestParam(name = "licenseNum", required = true) String licenseNum,
@@ -137,10 +134,13 @@ public class AuthController {
                                       @RequestParam(name = "license", required = true) MultipartFile license,
                                       @RequestParam(name = "agencyImg", required = true) MultipartFile agencyImg,
                                       @RequestParam(name = "taxImg", required = true) MultipartFile taxImg,
-                                      @RequestParam(name = "id", required = true) int id,
                                       @RequestParam(name = "email", required = false) String email,
                                       @RequestParam(name = "level", required = false) Integer level,
-                                      @RequestParam(name = "version", required = false) String version) {
+                                      @RequestParam(name = "version", required = false) String version,
+                                      UserEntity userSession) {
+        BaseResult result = new BaseResult();
+        int id = userSession.getId();
+
         String licenseUrl = FileUploadUtils.uploadFile(license, 2);
         String agencyImgUrl = FileUploadUtils.uploadFile(agencyImg, 2);
         String taxImgUrl = FileUploadUtils.uploadFile(taxImg, 2);
@@ -158,48 +158,34 @@ public class AuthController {
         certifiedEntity.setCompanyPhone(cpPhone);
         certifiedEntity.setCompanyWebsite(cpWebsite);
         certifiedEntity.setUserId(id);
-
-        Map<String, Object> map = new HashMap<>();
+        certifiedEntity.setType(0);
         try {
-            CertifiedEntity queryByUserId = certifiedService.queryByUserId(certifiedEntity.getUserId());
+            CertifiedEntity queryByUserId = certifiedService.queryByUserId(certifiedEntity.getUserId(),0);
             if (queryByUserId != null) {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10019);
-                map.put(AuthConstants.DESC, "你已上传企业证人信息，请耐心等待审核结果");
-                if (level != null && level == 1) {
-                    return new ModelAndView("redirect:/route/personal", map);
-                } else {
-                    return new ModelAndView("redirect:/route/register", map);
-                }
+                result.setCode(StateCode.AUTH_ERROR_10019.getCode());
+                result.setDesc("你已上传企业证人信息，请耐心等待审核结果");
             } else {
                 certifiedService.saveCertified(certifiedEntity);
-                map.put(AuthConstants.CODE, StateCode.Ok);
-                map.put(AuthConstants.DESC, "certified save ok");
-                map.put("email", email);
-                if (level != null && level == 1) {
-                    return new ModelAndView("redirect:/route/personal", map);
-                } else {
-                    return new ModelAndView("redirect:/route/register", map);
-                }
+                result.setCode(StateCode.Ok.getCode());
+                result.setDesc(AuthConstants.MSG_OK);
             }
 
         } catch (Exception e) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10007);
-            map.put(AuthConstants.DESC, "Failed to save authentication information");
-            return new ModelAndView("redirect:/route/register", map);
+            result.setCode(StateCode.AUTH_ERROR_10007.getCode());
+            result.setDesc("Failed to save authentication information");
         }
+        return result;
     }
 
     /**
      * 发送账号验证邮件
      *
-     * @param request
-     * @param response
      * @param account
      * @return
      */
+    @TokenVerify
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
-    public BaseResult product(HttpServletRequest request, HttpServletResponse response,
-                              @RequestParam(name = "token", required = true) String token,
+    public BaseResult product(@RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "account", required = true) String account,
                               @RequestParam(name = "version", required = false) String version,
                               UserEntity userSession) {
@@ -219,10 +205,10 @@ public class AuthController {
             jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
             //发送数据
             EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
-            return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+            return BaseResult.build(Ok, AuthConstants.MSG_OK);
         } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
             SendMSMUtils.postRequest(account,null,1);
-            return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+            return BaseResult.build(Ok, AuthConstants.MSG_OK);
         } else {
             return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
         }
@@ -250,7 +236,7 @@ public class AuthController {
             if (updateUser > 0) {
                 //删除验证reidskey
                 jc.del(actmd5);
-                return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+                return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else {
                 return BaseResult.build(StateCode.AUTH_ERROR_10021, "用户不存在");
             }
@@ -264,15 +250,12 @@ public class AuthController {
     /**
      * 密码重置验证邮件或手机发送
      *
-     * @param request
-     * @param response
      * @param account
      * @return
      */
     @RequestMapping(value = "/password/forget", method = RequestMethod.POST)
-    public BaseResult activation(HttpServletRequest request, HttpServletResponse response,
-                                 @RequestParam(name = "account", required = true) String account,
-                                 @RequestParam(name = "version", required = false) String version) {
+    public BaseResult forget(@RequestParam(name = "account", required = true) String account,
+                             @RequestParam(name = "version", required = false) String version) {
 
         UserEntity userEntity = new UserEntity();
         if (account.contains("@")) {
@@ -296,11 +279,11 @@ public class AuthController {
             jc.set(md5, user.getId() + "");
             jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
             EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
-            return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+            return BaseResult.build(Ok, AuthConstants.MSG_OK);
         } else {
             int postRequest = SendMSMUtils.postRequest(account,null,4);
             if (200==postRequest) {
-                return BaseResult.build(StateCode.Ok, AuthConstants.MSG_OK);
+                return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else {
                 return BaseResult.build(StateCode.AUTH_ERROR_9999, "SMS send failure");
             }
@@ -311,29 +294,21 @@ public class AuthController {
     /**
      * 密码重置
      *
-     * @param id
      * @param newPwd
      * @param version
      * @return
      */
     @RequestMapping(value = "/password/mailupdate", method = RequestMethod.POST)
-    public ModelAndView mailupdate(@RequestParam(name = "actmd5", required = true) String actmd5,
-                                   @RequestParam(name = "id", required = true) Integer id,
-                                   @RequestParam(name = "newPwd", required = true) String newPwd,
-                                   @RequestParam(name = "version", required = false) String version) {
-
-
-        AbstractView jsonView = new MappingJackson2JsonView();
-
-        Map<String, Object> map = new HashMap<>();
-
+    public BaseResult mailupdate(@RequestParam(name = "actmd5", required = true) String actmd5,
+                                 @RequestParam(name = "newPwd", required = true) String newPwd,
+                                 @RequestParam(name = "version", required = false) String version) {
+        BaseResult result = new BaseResult();
         if (!jc.exists(actmd5)) {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10012);
-            map.put(AuthConstants.DESC, "Verify expired");
-            jsonView.setAttributesMap(map);
-            return new ModelAndView(jsonView);
+            result.setCode(StateCode.AUTH_ERROR_10012.getCode());
+            result.setDesc("Verify expired");
+            return result;
         }
-
+        int id = Integer.parseInt(jc.get(actmd5));
         UserEntity userEntity = new UserEntity();
         userEntity.setId(id);
         MD5 md5 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
@@ -341,17 +316,15 @@ public class AuthController {
         userEntity.setUpdate_time(new Date());
         int updateUser = userDao.updateUser(userEntity);
         if (updateUser > 0) {
-            //删除验证reidskey
+            //删除验证redis-key
             jc.del(actmd5);
-            map.put(AuthConstants.CODE, StateCode.Ok);
-            map.put(AuthConstants.DESC, "ok");
-            jsonView.setAttributesMap(map);
-            return new ModelAndView(jsonView);
+            result.setCode(StateCode.Ok.getCode());
+            result.setDesc(AuthConstants.MSG_OK);
+            return result;
         }
-        map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_100);
-        map.put(AuthConstants.DESC, "unknown mistake");
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        result.setCode(StateCode.AUTH_ERROR_100.getCode());
+        result.setDesc("unknown mistake");
+        return result;
     }
 
     /**
@@ -361,68 +334,55 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "/token/reset", method = RequestMethod.POST)
-    public ModelAndView reset(@RequestParam(name = "token", required = true) String token) {
-        AbstractView jsonView = new MappingJackson2JsonView();
-
+    public DataResult<Map> reset(@RequestParam(name = "token", required = true) String token, UserEntity userSession) {
+        DataResult result = new DataResult();
         jc.expire(token, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put(AuthConstants.CODE, StateCode.Ok);
-        map.put(AuthConstants.DESC, "OK");
+        Map<String, String> map = new HashMap<>();
+        result.setCode(AuthConstants.OK);
+        result.setDesc(AuthConstants.MSG_OK);
         map.put("token", token);
-
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        result.setData(map);
+        return result;
     }
 
     /**
      * 登陆后修改密码
      *
      * @param token
-     * @param id
      * @param oldPwd
      * @param newPwd
      * @param version
      * @return
      */
+    @TokenVerify
     @RequestMapping(value = "/password/update", method = RequestMethod.POST)
-    public ModelAndView resmailupdateet(@RequestParam(name = "token", required = true) String token,
-                                        @RequestParam(name = "id", required = true) Integer id,
+    public BaseResult resmailupdateet(@RequestParam(name = "token", required = true) String token,
                                         @RequestParam(name = "oldPwd", required = true) String oldPwd,
                                         @RequestParam(name = "newPwd", required = true) String newPwd,
-                                        @RequestParam(name = "version", required = false) String version) {
-        Boolean exists = jc.exists(token);
-        AbstractView jsonView = new MappingJackson2JsonView();
-
-        Map<String, Object> map = new HashMap<>();
-
-        if (exists) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setId(id);
-            UserEntity entity = userDao.queryUser(userEntity);
-            MD5 md5 = new MD5.Builder().source(oldPwd).salt(AuthConstants.USER_SALT).build();
-            if (entity.getPassword().equals(md5.getMD5())) {
-                MD5 md51 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
-                userEntity.setPassword(md51.getMD5());
-                userEntity.setUpdate_time(new Date());
-                int updateUser = userDao.updateUser(userEntity);
-                if (updateUser > 0) {
-                    map.put(AuthConstants.CODE, StateCode.Ok);
-                    map.put(AuthConstants.DESC, "ok");
-                } else {
-                    map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_100);
-                    map.put(AuthConstants.DESC, "unknown mistake");
-                }
+                                        @RequestParam(name = "version", required = false) String version,
+                                        UserEntity userSession) {
+        BaseResult result = new BaseResult();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userSession.getId());
+        UserEntity entity = userDao.queryUser(userEntity);
+        MD5 md5 = new MD5.Builder().source(oldPwd).salt(AuthConstants.USER_SALT).build();
+        if (entity.getPassword().equals(md5.getMD5())) {
+            MD5 md51 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
+            userEntity.setPassword(md51.getMD5());
+            userEntity.setUpdate_time(new Date());
+            int updateUser = userDao.updateUser(userEntity);
+            if (updateUser > 0) {
+                result.setCode(AuthConstants.OK);
+                result.setDesc(AuthConstants.MSG_OK);
             } else {
-                map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10003);
-                map.put(AuthConstants.DESC, "Old password is incorrect");
+                result.setCode(StateCode.AUTH_ERROR_100.getCode());
+                result.setDesc("unknown mistake");
             }
         } else {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10014);
-            map.put(AuthConstants.DESC, "Please login account");
+            result.setCode(StateCode.AUTH_ERROR_10003.getCode());
+            result.setDesc("Old password is incorrect");
         }
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        return result;
     }
 
     /**
@@ -430,10 +390,9 @@ public class AuthController {
      *
      * @return
      */
+    @TokenVerify
     @RequestMapping(value = "/personal/save", method = RequestMethod.POST)
-    public ModelAndView resmailupdateet(HttpServletResponse response,
-                                        @RequestParam(name = "token", required = true) String token,
-                                        @RequestParam(name = "id", required = true) Integer id,
+    public BaseResult personalSave(@RequestParam(name = "token", required = true) String token,
                                         @RequestParam(name = "plName", required = true) String plName,
                                         @RequestParam(name = "plType", required = true) Integer plType,
                                         @RequestParam(name = "plCardNum", required = true) String plCardNum,
@@ -441,22 +400,20 @@ public class AuthController {
                                         @RequestParam(name = "plSideImg", required = false) MultipartFile plSideImg,
                                         @RequestParam(name = "plHidnumber", required = false) MultipartFile plHidnumber,
                                         @RequestParam(name = "passport", required = false) MultipartFile passport,
-                                        @RequestParam(name = "version", required = false) String version) {
-        Boolean exists = jc.exists(token);
-
-        Map<String, Object> map = new HashMap<>();
-
-        if (exists) {
-            String plPositiveImgUrl = FileUploadUtils.uploadFile(plPositiveImg, 3);
-            String plSideImgUrl = FileUploadUtils.uploadFile(plSideImg, 3);
-            String plHidnumberUrl = FileUploadUtils.uploadFile(plHidnumber, 3);
-            String passportUrl = FileUploadUtils.uploadFile(passport, 3);
-
+                                        @RequestParam(name = "version", required = false) String version,
+                                        UserEntity userSession) {
+            BaseResult result = new BaseResult();
+            int id = userSession.getId();
+            String plPositiveImgUrl = plPositiveImg==null?null: FileUploadUtils.uploadFile(plPositiveImg, 3);
+            String plSideImgUrl = plSideImg==null ? null :FileUploadUtils.uploadFile(plSideImg, 3);
+            String plHidnumberUrl = plHidnumber==null?null:FileUploadUtils.uploadFile(plHidnumber, 3);
+            String passportUrl = passport==null?null:FileUploadUtils.uploadFile(passport, 3);
             CertifiedEntity entity = new CertifiedEntity();
             entity.setUserId(id);
             entity.setPlName(plName);
             entity.setPlType(plType);
             entity.setPlCardNum(plCardNum);
+            entity.setType(1);
             if (plPositiveImgUrl != null) {
                 entity.setPlPositiveImg(plPositiveImgUrl);
             }
@@ -471,22 +428,22 @@ public class AuthController {
                 entity.setPassport(passportUrl);
             }
 
-            CertifiedEntity ce = certifiedService.queryCertified(id);
-            if (Objects.isNull(ce)) {
-                certifiedService.savePersonal(entity);
-                map.put(AuthConstants.CODE, StateCode.Ok);
-                map.put(AuthConstants.DESC, "ok");
-            } else {
-                certifiedService.updatePersonal(entity);
-                map.put(AuthConstants.CODE, StateCode.Ok);
-                map.put(AuthConstants.DESC, "ok");
+            try {
+                CertifiedEntity ce = certifiedService.queryCertified(id,1);
+                if (Objects.isNull(ce)) {
+                    certifiedService.savePersonal(entity);
+                    result.setCode(StateCode.Ok.getCode());
+                    result.setDesc(AuthConstants.MSG_OK);
+                } else {
+                    certifiedService.updatePersonal(entity);
+                    result.setCode(StateCode.Ok.getCode());
+                    result.setDesc(AuthConstants.MSG_OK);
+                }
+            }catch (Exception e){
+                result.setCode(StateCode.Unknown.getCode());
+                result.setDesc("Unknown error");
             }
-        } else {
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10014);
-            map.put(AuthConstants.DESC, "Please login account");
-        }
-
-        return new ModelAndView("redirect:/route/personal", map);
+        return result;
     }
 
 }

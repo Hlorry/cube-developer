@@ -4,17 +4,17 @@
 
 <mapper namespace="cn.getcube.develop.dao.developes.CertifiedDao">
     <select id="queryByUserId" resultType="cn.getcube.develop.entity.CertifiedEntity" parameterType="int">
-        select * from d_user_company where userId = #{userId}
+        select * from d_user_company where userId = #{0} and type=#{1}
     </select>
 
     <insert id="saveCertified" parameterType="cn.getcube.develop.entity.CertifiedEntity">
-        insert into d_user_company(cpName, cpAddress, licenseNum, licenseImg, agencyNum, agencyImg, taxNum, taxImg, corporate, cpPhone, cpWebsite, userId)
-                            value (#{companyName}, #{companyAddress}, #{licenseNum}, #{licenseImg}, #{agencyNum}, #{agencyImg}, #{taxNum}, #{taxImg}, #{corporate}, #{companyPhone}, #{companyWebsite}, #{userId})
+        insert into d_user_company(type,cpName, cpAddress, licenseNum, licenseImg, agencyNum, agencyImg, taxNum, taxImg, corporate, cpPhone, cpWebsite, userId)
+                            value (#{type},#{companyName}, #{companyAddress}, #{licenseNum}, #{licenseImg}, #{agencyNum}, #{agencyImg}, #{taxNum}, #{taxImg}, #{corporate}, #{companyPhone}, #{companyWebsite}, #{userId})
     </insert>
 
     <insert id="savePersonal" parameterType="cn.getcube.develop.entity.CertifiedEntity">
-        INSERT INTO d_user_company (userId, plName, plType, plCardNum, plPositiveImg, plSideImg, plHidnumber, passport)
-                            VALUE (#{userId}, #{plName}, #{plType}, #{plCardNum}, #{plPositiveImg}, #{plSideImg}, #{plHidnumber}, #{passport})
+        INSERT INTO d_user_company (type,userId, plName, plType, plCardNum, plPositiveImg, plSideImg, plHidnumber, passport)
+                            VALUE (#{type},#{userId}, #{plName}, #{plType}, #{plCardNum}, #{plPositiveImg}, #{plSideImg}, #{plHidnumber}, #{passport})
     </insert>
 
     <update id="updatePersonal" parameterType="cn.getcube.develop.entity.CertifiedEntity">
@@ -42,6 +42,6 @@
                 ,passport = #{passport}
             </if>
         </set>
-        WHERE userId = #{userId}
+        WHERE userId = #{userId} and type=1
     </update>
 </mapper>

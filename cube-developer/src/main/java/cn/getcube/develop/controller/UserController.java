@@ -17,8 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -41,11 +39,10 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public DataResult<UserEntity> product(HttpServletRequest request, HttpServletResponse response,
-                                          @RequestParam(name = "name", required = true) String name,
+    public DataResult<UserEntity> product(@RequestParam(name = "name", required = true) String name,
                                           @RequestParam(name = "account", required = true) String account,
                                           @RequestParam(name = "password", required = true) String password,
-                                          @RequestParam(name = "userType", required = true) Integer userType,
+                                          @RequestParam(name = "userType", required = false) Integer userType,
                                           @RequestParam(name = "way", required = false) Integer way) {
         DataResult<UserEntity> result = new DataResult<>();
         if (name != null && account != null && password != null && userType != null) {
@@ -107,8 +104,7 @@ public class UserController {
      */
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<JSONObject> product(HttpServletRequest request, HttpServletResponse response,
-                                          @RequestParam(name = "token", required = false) String token,
+    public DataResult<JSONObject> product(@RequestParam(name = "token", required = false) String token,
                                           @RequestParam(name = "version", required = false) String version,
                                           @RequestParam(name = "id", required = false) Integer id,
                                           @RequestParam(name = "name", required = false) String name,
@@ -145,8 +141,7 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public DataResult<JSONObject> signin(HttpServletRequest request, HttpServletResponse response,
-                                         @RequestParam(name = "version", required = false) String version,
+    public DataResult<JSONObject> signin(@RequestParam(name = "version", required = false) String version,
                                          @RequestParam(name = "targetUrl", required = false) String targetUrl,
                                          @RequestParam(name = "username", required = true) String username,
                                          @RequestParam(name = "password", required = true) String password) throws UnsupportedEncodingException {
@@ -200,8 +195,7 @@ public class UserController {
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
     @TokenVerify
-    public BaseResult logout(HttpServletResponse response,
-                               @RequestParam(name = "token", required = true) String token,
+    public BaseResult logout(@RequestParam(name = "token", required = true) String token,
                                @RequestParam(name = "version", required = false) String version,
                                UserEntity userSession) {
         try {
@@ -217,20 +211,16 @@ public class UserController {
     /**
      * 修改账户名称
      *
-     * @param request
-     * @param response
      * @param token
-     * @param name
      * @param version
      * @return
      */
     @RequestMapping(value = "/update/name", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<UserEntity> updateUserName(HttpServletRequest request, HttpServletResponse response,
-                              @RequestParam(name = "token", required = true) String token,
-                              @RequestParam(name = "name", required = true) String name,
-                              @RequestParam(name = "version", required = false) String version,
-                              UserEntity userSession) {
+    public DataResult<UserEntity> updateUserName(@RequestParam(name = "token", required = true) String token,
+                                                  @RequestParam(name = "name", required = true) String name,
+                                                  @RequestParam(name = "version", required = false) String version,
+                                                 UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userSession.getId());
@@ -247,8 +237,6 @@ public class UserController {
     /**
      * 手机验证
      *
-     * @param request
-     * @param response
      * @param token
      * @param msmCode
      * @param version
@@ -256,8 +244,7 @@ public class UserController {
      */
     @RequestMapping(value = "/phone/ver", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<UserEntity> param(HttpServletRequest request, HttpServletResponse response,
-                              @RequestParam(name = "token", required = true) String token,
+    public DataResult<UserEntity> param(@RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "phone", required = true) String phone,
                               @RequestParam(name = "msmCode", required = true) String msmCode,
                               @RequestParam(name = "version", required = false) String version,

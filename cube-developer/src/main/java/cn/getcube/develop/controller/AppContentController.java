@@ -2,12 +2,17 @@ package cn.getcube.develop.controller;
 
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.StateCode;
+import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.LoginLog;
+import cn.getcube.develop.entity.UserEntity;
+import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.para.LoginLogPara;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.service.LoginLogService;
+import cn.getcube.develop.utils.DataResult;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,39 +46,31 @@ public class AppContentController {
     @Autowired
     public LoginLogService loginLogService;
 
+    @TokenVerify
     @RequestMapping(value = "/userCube", method = RequestMethod.POST)
-    public ModelAndView queryAppUser(@RequestParam(name = "appId", required = false) String appId) {
-        AbstractView jsonView = new MappingJackson2JsonView();
-        Map<String, Object> map = new HashMap<>();
+    public DataResult<Map> queryAppUser(@RequestParam(name = "token") String token,
+                                        @RequestParam(name = "appId") String appId,
+                                        UserEntity userSession) {
+        DataResult<Map> result= new DataResult<>();
+        try {
+            Map<String, Object> map = new HashMap<>();
+            AppPara appPara = new AppPara();
+            appPara.setAppId(appId);
+            AppEntity appEntity = appService.queryApp(appPara);
 
-        AppPara appPara = new AppPara();
-        appPara.setAppId(appId);
-        AppEntity appEntity = appService.queryApp(appPara);
+            List<LoginLog> loginLogs = new ArrayList<>();
 
-      /*  JSONArray objects = JSON.parseArray(appEntity.getUseId());*/
-
-        List<LoginLog> loginLogs = new ArrayList<>();
-        
-        LoginLogPara para=new LoginLogPara();
-        para.setNumbers(appEntity.getUseId());
-        if(para.getCubes()!=null){
+            LoginLogPara para=new LoginLogPara();
+            para.setNumbers(appEntity.getUseId());
             loginLogs = loginLogService.queryInterval(para);
-            map.put(AuthConstants.CODE, StateCode.Ok);
+            result.setCode(StateCode.Ok.getCode());
+            result.setDesc(AuthConstants.MSG_OK);
             map.put("data", loginLogs);
-        }else{
-        	//loginLogs = loginLogService.queryInterval(para);
-            map.put(AuthConstants.CODE, StateCode.AUTH_ERROR_10008);
-            map.put("data", loginLogs);
+            result.setData(map);
+        }catch (Exception e){
+            result.setCode(StateCode.Unknown.getCode());
+            result.setDesc("Unknown error");
         }
-       /* objects.forEach(a -> {
-            JSONObject aa = (JSONObject) a;
-            int[] number = ArrayNumberUtils.getArrayNumber(aa.get("numStart").toString(), aa.get("numEnd").toString());
-            List<LoginLog> logs = loginLogService.queryInterval(number);
-            loginLogs.addAll(logs);
-        });*/
-       
-
-        jsonView.setAttributesMap(map);
-        return new ModelAndView(jsonView);
+        return result;
     }
 }

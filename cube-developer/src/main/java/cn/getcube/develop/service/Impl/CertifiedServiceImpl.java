@@ -17,13 +17,13 @@ public class CertifiedServiceImpl implements CertifiedService {
     private CertifiedDao certifiedDao;
 
     @Override
-    public CertifiedEntity queryCertified(int userId) {
-        return certifiedDao.queryByUserId(userId);
+    public CertifiedEntity queryCertified(int userId,int type) {
+        return certifiedDao.queryByUserId(userId,type);
     }
 
     @Override
     public void saveCertified(CertifiedEntity certified) {
-        CertifiedEntity certifiedEntity = certifiedDao.queryByUserId(certified.getUserId());
+        CertifiedEntity certifiedEntity = certifiedDao.queryByUserId(certified.getUserId(),certified.getType());
 
         certifiedDao.saveCertified(certified);
     }
@@ -39,8 +39,8 @@ public class CertifiedServiceImpl implements CertifiedService {
     }
 
     @Override
-    public CertifiedEntity queryByUserId(Integer userId) {
-        return certifiedDao.queryByUserId(userId);
+    public CertifiedEntity queryByUserId(Integer userId,int type) {
+        return certifiedDao.queryByUserId(userId,type);
     }
 
 }

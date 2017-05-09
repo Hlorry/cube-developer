@@ -72,6 +72,11 @@ public class CertifiedEntity {
      */
     private int userId;
 
+    /**
+     * 0公司 1个人
+     */
+    private int type;
+
 /******************************个人信息**********************************/
     /**
      * 真实姓名
@@ -267,6 +272,10 @@ public class CertifiedEntity {
     public void setPassport(String passport) {
         this.passport = passport;
     }
+
+    public int getType() { return type; }
+
+    public void setType(int type) { this.type = type; }
 
     public JSONObject toJsonEnterprise(){
         JSONObject json = new JSONObject();
