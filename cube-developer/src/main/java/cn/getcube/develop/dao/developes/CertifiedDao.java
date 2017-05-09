@@ -6,6 +6,12 @@ import cn.getcube.develop.entity.CertifiedEntity;
  * Created by Administrator on 2016/3/14.
  */
 public interface CertifiedDao {
+    /**
+     * 根据用户id查询
+     * @param userId
+     * @param type
+     * @return
+     */
     CertifiedEntity queryByUserId(int userId,int type);
 
     void saveCertified(CertifiedEntity certified);
@@ -23,4 +29,11 @@ public interface CertifiedDao {
      * @return
      */
     int updatePersonal(CertifiedEntity certified);
+
+    /**
+     *  根据id查询
+     * @param id
+     * @return
+     */
+    CertifiedEntity queryCertified(int id);
 }
