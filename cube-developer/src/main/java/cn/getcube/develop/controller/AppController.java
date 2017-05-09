@@ -6,6 +6,7 @@ import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.UserEntity;
+import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.utils.DataResult;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -45,15 +44,15 @@ public class AppController {
                                                      @RequestParam(name = "category", required = false) String category,
                                                      @RequestParam(name = "description", required = false) String description,
                                                      @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
-                                                     @RequestParam(name = "userId", required = false) String userId,
-                                                     @RequestParam(name = "version", required = false) String version) {
+                                                     @RequestParam(name = "version", required = false) String version,
+                                                     UserSession userSession) {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行存储操作
 
         // 验证输入值
         AppPara appPara = new AppPara();
-        appPara.setUserId(userId == null ? 0 : Integer.parseInt(userId));
+        appPara.setUserId(userSession.getId());
         appPara.setAppName(appName);
         appPara.setAppStage(appStage);
         if ("2".equals(appStage)) {// 运营中已有用户，设置用户量级
@@ -66,16 +65,15 @@ public class AppController {
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<Map<String, Object>> updateApp(HttpServletRequest request,
-                                                     @RequestParam(name = "token", required = true) String token,
+    public DataResult<Map<String, Object>> updateApp(@RequestParam(name = "token", required = true) String token,
                                                      @RequestParam(name = "appName", required = false) String appName,
                                                      @RequestParam(name = "appStage", required = false) String appStage,
                                                      @RequestParam(name = "category", required = false) String category,
                                                      @RequestParam(name = "description", required = false) String description,
                                                      @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
-                                                     @RequestParam(name = "userId", required = false) String userId,
                                                      @RequestParam(name = "appId", required = true) String appId,
-                                                     @RequestParam(name = "version", required = false) String version) {
+                                                     @RequestParam(name = "version", required = false) String version,
+                                                     UserSession userSession) {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行修改操作
@@ -145,21 +143,13 @@ public class AppController {
     @RequestMapping(value = "/query/all", method = RequestMethod.POST)
     @TokenVerify
     public DataResult<Map<String, Object>> queryAllApp(@RequestParam(name = "token", required = true) String token,
-                                                       @RequestParam(name = "userId", required = true) String userId) {
+                                                       UserSession userSession) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
-        // 验证token。判断用户时候登陆
-        // 在拦截器中统一验证
-        // 验证查询条件
-        if (userId == null || userId == "") {
-            dataResult.setCode(StateCode.APP_QUERY_PARAM_ERROR.getCode());
-            dataResult.setDesc("Query param error.");
-            return dataResult;
-        }
 
         // 根据用户的ID查询所有的应用信息
         AppPara appPara = new AppPara();
-        appPara.setUserId(Integer.parseInt(userId));
+        appPara.setUserId(userSession.getId());
         List<AppEntity> apps = appService.queryAllApps(appPara);
         map.put("apps", apps);
         dataResult.setCode(StateCode.Ok.getCode());
@@ -170,8 +160,7 @@ public class AppController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<Map<String, Object>> app(HttpServletRequest request,
-                                               @RequestParam(name = "token", required = true) String token,
+    public DataResult<Map<String, Object>> app(@RequestParam(name = "token", required = true) String token,
                                                UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
@@ -192,26 +181,18 @@ public class AppController {
 
     @RequestMapping(value = "/detail", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<Map<String, Object>> overview(HttpServletResponse response,
-                                                    @RequestParam(name = "token", required = true) String token,
+    public DataResult<Map<String, Object>> overview(@RequestParam(name = "token", required = true) String token,
                                                     @RequestParam(name = "appId", required = true) String appId) throws IOException {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
         AppPara appPara = new AppPara();
         appPara.setAppId(appId);
         AppEntity appEntity = appService.queryApp(appPara);
-        if (appEntity == null) {
-            response.sendRedirect("/app");
-            return null;
-        } else {
-            //modelAndView.addObject("appObj", appEntity);
-            //modelAndView.setViewName("app-detail");
-            map.put("app", appEntity);
-            dataResult.setCode(StateCode.Ok.getCode());
-            dataResult.setDesc("Ok.");
-            dataResult.setData(map);
-            return dataResult;
-        }
+        map.put("app", appEntity);
+        dataResult.setCode(StateCode.Ok.getCode());
+        dataResult.setDesc("Ok.");
+        dataResult.setData(map);
+        return dataResult;
     }
 
     @RequestMapping(value = "/param", method = RequestMethod.POST)
@@ -256,16 +237,16 @@ public class AppController {
 
     @RequestMapping(value = "/environment", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<Map<String, Object>> avatar(HttpServletRequest request,
-                                                  @RequestParam(name = "token", required = true) String token,
+    public DataResult<Map<String, Object>> environment(@RequestParam(name = "token", required = true) String token,
                                                   @RequestParam(name = "environment", required = false) String environment,
                                                   @RequestParam(name = "appId", required = false) String appId,
-                                                  @RequestParam(name = "userId", required = false) Integer userId) {
-        return appService.updateEnvironment(environment, appId, userId);
+                                                  UserSession userSession) {
+        return appService.updateEnvironment(environment, appId, userSession.getId());
     }
 
+    @TokenVerify
     @RequestMapping(value = "/change_env", method = RequestMethod.POST)
-    public Map<String, Object> changeEnvironment(String appid) {
+    public Map<String, Object> changeEnvironment(@RequestParam(name = "token", required = true) String token,@RequestParam(name = "appid", required = true)String appid) {
         return appService.changeEnvironment(appid);
     }
 }

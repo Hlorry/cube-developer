@@ -6,7 +6,7 @@ import cn.getcube.develop.entity.CertifiedEntity;
  * Created by Administrator on 2016/3/14.
  */
 public interface CertifiedService {
-    CertifiedEntity queryCertified(int userId);
+    CertifiedEntity queryCertified(int userId,int type);
 
     void saveCertified(CertifiedEntity certified);
 
@@ -29,5 +29,5 @@ public interface CertifiedService {
      * @param userId
      * @return
      */
-    CertifiedEntity queryByUserId(Integer userId);
+    CertifiedEntity queryByUserId(Integer userId,int type);
 }
