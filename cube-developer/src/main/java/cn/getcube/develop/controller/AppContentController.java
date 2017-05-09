@@ -5,6 +5,7 @@ import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.LoginLog;
+import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.para.LoginLogPara;
@@ -49,7 +50,7 @@ public class AppContentController {
     @RequestMapping(value = "/userCube", method = RequestMethod.POST)
     public DataResult<Map> queryAppUser(@RequestParam(name = "token") String token,
                                         @RequestParam(name = "appId") String appId,
-                                        UserSession userSession) {
+                                        UserEntity userSession) {
         DataResult<Map> result= new DataResult<>();
         try {
             Map<String, Object> map = new HashMap<>();

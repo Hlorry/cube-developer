@@ -45,7 +45,7 @@ public class AppController {
                                                      @RequestParam(name = "description", required = false) String description,
                                                      @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
                                                      @RequestParam(name = "version", required = false) String version,
-                                                     UserSession userSession) {
+                                                     UserEntity userSession) {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行存储操作
@@ -73,7 +73,7 @@ public class AppController {
                                                      @RequestParam(name = "appUserLevel", required = false) String appUserLevel,
                                                      @RequestParam(name = "appId", required = true) String appId,
                                                      @RequestParam(name = "version", required = false) String version,
-                                                     UserSession userSession) {
+                                                     UserEntity userSession) {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行修改操作
@@ -143,7 +143,7 @@ public class AppController {
     @RequestMapping(value = "/query/all", method = RequestMethod.POST)
     @TokenVerify
     public DataResult<Map<String, Object>> queryAllApp(@RequestParam(name = "token", required = true) String token,
-                                                       UserSession userSession) {
+                                                       UserEntity userSession) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
 
@@ -240,7 +240,7 @@ public class AppController {
     public DataResult<Map<String, Object>> environment(@RequestParam(name = "token", required = true) String token,
                                                   @RequestParam(name = "environment", required = false) String environment,
                                                   @RequestParam(name = "appId", required = false) String appId,
-                                                  UserSession userSession) {
+                                                       UserEntity userSession) {
         return appService.updateEnvironment(environment, appId, userSession.getId());
     }
 

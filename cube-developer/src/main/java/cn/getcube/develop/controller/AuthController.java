@@ -56,7 +56,7 @@ public class AuthController {
     public BaseResult certifiedFind(@RequestParam(name = "token", required = true) String token,
                                     @RequestParam(name = "id", required = true) Integer id,
                                     @RequestParam(name = "version", required = false) String version,
-                                    UserSession userSession) {
+                                    UserEntity userSession) {
         CertifiedEntity ce = certifiedService.queryCertified(id,0);
         Map<String, Object> map = new HashMap<>();
         if (Objects.isNull(ce)) {
@@ -137,7 +137,7 @@ public class AuthController {
                                       @RequestParam(name = "email", required = false) String email,
                                       @RequestParam(name = "level", required = false) Integer level,
                                       @RequestParam(name = "version", required = false) String version,
-                                      UserSession userSession) {
+                                      UserEntity userSession) {
         BaseResult result = new BaseResult();
         int id = userSession.getId();
 
@@ -334,7 +334,7 @@ public class AuthController {
      * @return
      */
     @RequestMapping(value = "/token/reset", method = RequestMethod.POST)
-    public DataResult<Map> reset(@RequestParam(name = "token", required = true) String token, UserSession userSession) {
+    public DataResult<Map> reset(@RequestParam(name = "token", required = true) String token, UserEntity userSession) {
         DataResult result = new DataResult();
         jc.expire(token, AuthConstants.AUTH_TOKEN_FAIL_TIME);
         Map<String, String> map = new HashMap<>();
@@ -362,7 +362,7 @@ public class AuthController {
                                         @RequestParam(name = "oldPwd", required = true) String oldPwd,
                                         @RequestParam(name = "newPwd", required = true) String newPwd,
                                         @RequestParam(name = "version", required = false) String version,
-                                        UserSession userSession) {
+                                        UserEntity userSession) {
         BaseResult result = new BaseResult();
         UserEntity userEntity = new UserEntity();
         userEntity.setId(id);
@@ -394,7 +394,7 @@ public class AuthController {
      */
     @TokenVerify
     @RequestMapping(value = "/personal/save", method = RequestMethod.POST)
-    public BaseResult resmailupdateet(@RequestParam(name = "token", required = true) String token,
+    public BaseResult personalSave(@RequestParam(name = "token", required = true) String token,
                                         @RequestParam(name = "plName", required = true) String plName,
                                         @RequestParam(name = "plType", required = true) Integer plType,
                                         @RequestParam(name = "plCardNum", required = true) String plCardNum,
@@ -403,13 +403,13 @@ public class AuthController {
                                         @RequestParam(name = "plHidnumber", required = false) MultipartFile plHidnumber,
                                         @RequestParam(name = "passport", required = false) MultipartFile passport,
                                         @RequestParam(name = "version", required = false) String version,
-                                        UserSession userSession) {
+                                        UserEntity userSession) {
             BaseResult result = new BaseResult();
             int id = userSession.getId();
-            String plPositiveImgUrl = FileUploadUtils.uploadFile(plPositiveImg, 3);
-            String plSideImgUrl = FileUploadUtils.uploadFile(plSideImg, 3);
-            String plHidnumberUrl = FileUploadUtils.uploadFile(plHidnumber, 3);
-            String passportUrl = FileUploadUtils.uploadFile(passport, 3);
+            String plPositiveImgUrl = plPositiveImg==null?null: FileUploadUtils.uploadFile(plPositiveImg, 3);
+            String plSideImgUrl = plSideImg==null ? null :FileUploadUtils.uploadFile(plSideImg, 3);
+            String plHidnumberUrl = plHidnumber==null?null:FileUploadUtils.uploadFile(plHidnumber, 3);
+            String passportUrl = passport==null?null:FileUploadUtils.uploadFile(passport, 3);
             CertifiedEntity entity = new CertifiedEntity();
             entity.setUserId(id);
             entity.setPlName(plName);

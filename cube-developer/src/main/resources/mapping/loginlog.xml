@@ -12,7 +12,7 @@
  -->
  
  <select id="queryInterval" resultType="cn.getcube.develop.entity.LoginLog" parameterType="cn.getcube.develop.para.LoginLogPara">
-        select * from login_log 
+        select * from cube.login_log
         <if test="cubes!=null and cubes.size()>0">
        			where
 	         <foreach collection="cubes" item="item" separator="or">
