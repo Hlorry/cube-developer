@@ -110,7 +110,7 @@ public class AuthController {
                 certifiedEntity.setLicenseImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getLicenseImg());
                 certifiedEntity.setPlPositiveImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getPlPositiveImg());
                 certifiedEntity.setPlSideImg(HttpUriCode.HTTP_CODE_URI + certifiedEntity.getPlSideImg());
-                map.put("cube", certifiedEntity.toJsonEnterprise());
+                map.put("cube", certifiedEntity);
                 dataResult.setData(map);
                 return dataResult;
             } else {

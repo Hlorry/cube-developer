@@ -33,14 +33,14 @@ public class CertifiedEntity {
     private String licenseImg;
 
     /**
-     * 组织机构号
-     */
-    private String agencyNum;
-
-    /**
      * 组织机构证
      */
     private String agencyImg;
+
+    /**
+     * 组织机构号
+     */
+    private String agencyNum;
 
     /**
      * 税务登记号
