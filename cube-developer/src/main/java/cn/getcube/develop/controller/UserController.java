@@ -47,6 +47,7 @@ public class UserController {
                                           @RequestParam(name = "password", required = true) String password,
                                           @RequestParam(name = "userType", required = false) Integer userType,
                                           @RequestParam(name = "way", required = false) Integer way) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
         DataResult<UserEntity> result = new DataResult<>();
         if (name != null && account != null && password != null && userType != null) {
 
