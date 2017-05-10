@@ -184,12 +184,9 @@ public class AuthController {
      * @param account
      * @return
      */
-    @TokenVerify
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
-    public BaseResult product(@RequestParam(name = "token", required = true) String token,
-                              @RequestParam(name = "account", required = true) String account,
-                              @RequestParam(name = "version", required = false) String version,
-                              UserEntity userSession) {
+    public BaseResult product(@RequestParam(name = "account", required = true) String account,
+                              @RequestParam(name = "version", required = false) String version) {
         UserEntity userEntity = new UserEntity();
         if (account.contains("@")) {
             userEntity.setEmail(account);
@@ -205,7 +202,7 @@ public class AuthController {
             jc.set(md5, user.getId() + "");
             jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
             //发送数据
-            EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/activation?actmd5=" + md5), user.getEmail());
+            EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
             return BaseResult.build(Ok, AuthConstants.MSG_OK);
         } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
             SendMSMUtils.postRequest(account,null,1);
