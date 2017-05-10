@@ -104,13 +104,11 @@ public class UserController {
      */
     @RequestMapping(value = "/query", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<JSONObject> product(@RequestParam(name = "token", required = false) String token,
-                                          @RequestParam(name = "version", required = false) String version,
+    public DataResult<JSONObject> product(@RequestParam(name = "version", required = false) String version,
                                           @RequestParam(name = "id", required = false) Integer id,
                                           @RequestParam(name = "name", required = false) String name,
                                           @RequestParam(name = "email", required = false) String email,
-                                          @RequestParam(name = "phone", required = false) String phone,
-                                          UserEntity userSession) {
+                                          @RequestParam(name = "phone", required = false) String phone) {
         UserEntity userEntity = new UserEntity();
         if(id != null){
             userEntity.setId(id);
@@ -131,6 +129,23 @@ public class UserController {
         }
        JSONObject jsonObject = new JSONObject();
         jsonObject.put("users",users);
+        return new DataResult<JSONObject>(jsonObject);
+
+    }
+
+    @RequestMapping(value = "/query_token", method = RequestMethod.POST)
+    @TokenVerify
+    public DataResult<JSONObject> queryByToken(@RequestParam(name = "token", required = false) String token,
+                                          UserEntity userSession) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userSession.getId());
+
+        UserEntity user = userService.queryUser(userEntity);
+        if (Objects.isNull(user)) {
+            return new DataResult<>(StateCode.AUTH_ERROR_10008.getCode(),AuthConstants.QUERY_NO_DATA);
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("user",user);
         return new DataResult<JSONObject>(jsonObject);
 
     }
