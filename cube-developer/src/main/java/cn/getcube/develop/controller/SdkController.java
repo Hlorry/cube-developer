@@ -3,6 +3,7 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.entity.SdkEntity;
 import cn.getcube.develop.service.SdkService;
+import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.SdkConstants;
 import com.alibaba.fastjson.JSONObject;
@@ -20,7 +21,7 @@ public class SdkController {
 	private SdkService sdkService;
 	
 	@RequestMapping(value="/newest/sdk", method = RequestMethod.POST)
-	public DataResult<JSONObject> getNewestSdk() {
+	public BaseResult getNewestSdk() {
 		try {
 			List<SdkEntity> list = sdkService.selectNewestSdk();
 			JSONObject jsonObject = new JSONObject();

@@ -103,7 +103,6 @@ public class UserController {
      * @return
      */
     @RequestMapping(value = "/query", method = RequestMethod.POST)
-    @TokenVerify
     public DataResult<JSONObject> product(@RequestParam(name = "version", required = false) String version,
                                           @RequestParam(name = "id", required = false) Integer id,
                                           @RequestParam(name = "name", required = false) String name,
@@ -135,14 +134,14 @@ public class UserController {
 
     @RequestMapping(value = "/query_token", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<JSONObject> queryByToken(@RequestParam(name = "token", required = false) String token,
+    public BaseResult queryByToken(@RequestParam(name = "token", required = false) String token,
                                           UserEntity userSession) {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userSession.getId());
 
         UserEntity user = userService.queryUser(userEntity);
         if (Objects.isNull(user)) {
-            return new DataResult<>(StateCode.AUTH_ERROR_10008.getCode(),AuthConstants.QUERY_NO_DATA);
+            return BaseResult.build(StateCode.AUTH_ERROR_10008.getCode(),AuthConstants.QUERY_NO_DATA);
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("user",user);
@@ -232,11 +231,10 @@ public class UserController {
      */
     @RequestMapping(value = "/update/name", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<UserEntity> updateUserName(@RequestParam(name = "token", required = true) String token,
+    public BaseResult updateUserName(@RequestParam(name = "token", required = true) String token,
                                                   @RequestParam(name = "name", required = true) String name,
                                                   @RequestParam(name = "version", required = false) String version,
                                                  UserEntity userSession) {
-        Map<String, Object> map = new HashMap<>();
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userSession.getId());
         userEntity.setName(name);
@@ -259,7 +257,7 @@ public class UserController {
      */
     @RequestMapping(value = "/phone/ver", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<UserEntity> param(@RequestParam(name = "token", required = true) String token,
+    public BaseResult param(@RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "phone", required = true) String phone,
                               @RequestParam(name = "msmCode", required = true) String msmCode,
                               @RequestParam(name = "version", required = false) String version,
@@ -297,7 +295,7 @@ public class UserController {
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @TokenVerify
-    public DataResult<JSONObject> upload(
+    public BaseResult upload(
                                @RequestParam(name = "token", required = true) String token,
                                @RequestParam(name = "file", required = true) MultipartFile file,
                                @RequestParam(name = "version", required = false) String version,

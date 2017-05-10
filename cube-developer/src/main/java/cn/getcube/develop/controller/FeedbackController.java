@@ -5,6 +5,7 @@ import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.FeedbackEntity;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.FeedbackService;
+import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.FeedbackConstants;
 import com.alibaba.fastjson.JSONObject;
@@ -25,11 +26,11 @@ public class FeedbackController {
 
 	@RequestMapping(value = "/add",method = RequestMethod.POST)
 	@TokenVerify
-	public DataResult<JSONObject> add(@RequestParam(name = "token", required = true) String token,
-									  @RequestParam(name = "title")String title,
-									  @RequestParam(name = "content")String content,
-									  @RequestParam(name = "phone")String phone,
-									  UserEntity userSession){
+	public BaseResult add(@RequestParam(name = "token", required = true) String token,
+						  @RequestParam(name = "title")String title,
+						  @RequestParam(name = "content")String content,
+						  @RequestParam(name = "phone")String phone,
+						  UserEntity userSession){
 		FeedbackEntity feedbackEntity = new FeedbackEntity();
 		feedbackEntity.setContent(content);
 		feedbackEntity.setPhone(phone);
