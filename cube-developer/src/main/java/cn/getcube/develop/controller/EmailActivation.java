@@ -60,7 +60,7 @@ public class EmailActivation {
     }
 
     /**
-     * 修改邮箱 验证连接
+     * 修改邮箱
      *
      * @param actmd5 系统生成的字符串
      * @return
@@ -105,7 +105,7 @@ public class EmailActivation {
     }
 
     /**
-     * 修改邮箱 验证连接
+     * 绑定邮箱
      *
      * @param actmd5 系统生成的字符串
      * @return
@@ -149,7 +149,7 @@ public class EmailActivation {
     }
 
     /**
-     * 修改邮箱 验证连接
+     * 解绑邮箱
      *
      * @param actmd5 系统生成的字符串
      * @return
