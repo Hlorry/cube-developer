@@ -363,10 +363,10 @@ public class UserController {
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
                 UserEntity temp = new UserEntity();
-                temp.setPhone(userSession.getPhone());
+                temp.setId(userSession.getId());
                 UserEntity db = userService.queryUser(temp);
-                if(null!=db){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                if(Objects.isNull(userSession.getPhone())){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10031,"未绑定手机");
                 }
 
                 if(Objects.isNull(db.getEmail())){
@@ -379,7 +379,7 @@ public class UserController {
                 userEntity.setUpdate_time(new Date());
                 int updateUser = userService.fixPhone(userEntity);
                 if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_FIX+userSession.getPhone());
+                    jc.del(RedisKey.SMS_UNBIND+userSession.getPhone());
                     return new DataResult<>(userEntity);
                 } else {
                     return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
