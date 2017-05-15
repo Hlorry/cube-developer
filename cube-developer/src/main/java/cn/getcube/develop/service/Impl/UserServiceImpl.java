@@ -48,4 +48,9 @@ public class UserServiceImpl implements UserService {
     public UserEntity login(UserEntity userEntity) {
         return userDao.login(userEntity);
     }
+
+    @Override
+    public int fixEmail(UserEntity userEntity) {
+        return userDao.fixEmail(userEntity);
+    }
 }

@@ -44,4 +44,11 @@ public interface UserService {
      */
     UserEntity login(UserEntity userEntity);
 
+    /**
+     * 修改邮箱
+     *
+     * @param userEntity
+     */
+    int fixEmail(UserEntity userEntity);
+
 }

@@ -31,4 +31,10 @@ public interface UserDao {
     int updateUser(UserEntity userEntity);
 
     UserEntity login(UserEntity userEntity);
+
+    /**
+     * 修改邮箱
+     * @param userEntity
+     */
+    int fixEmail(UserEntity userEntity);
 }
