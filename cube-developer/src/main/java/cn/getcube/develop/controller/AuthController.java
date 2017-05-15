@@ -315,17 +315,13 @@ public class AuthController {
         //获取uri 邮箱验证时用户访问页面
         //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        if (Objects.nonNull(userEntity.getEmail())) {
-            //发送Email 验证
-            //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(userSession.getName());
-            jc.set(md5+"_fix", userSession.getId() + "_"+email);
-            jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5), email);
-            return BaseResult.build(Ok, AuthConstants.MSG_OK);
-        }else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10021, "请先绑定邮箱");
-        }
+        //发送Email 验证
+        //MD5去重算法生成mail验证
+        String md5 = Md5Helper.MD5.getMD5(userSession.getName());
+        jc.set(md5+"_fix", userSession.getId() + "_"+email);
+        jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5), email);
+        return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }
 
     /**
@@ -340,6 +336,10 @@ public class AuthController {
                           @RequestParam(name = "email", required = true) String email,
                           @RequestParam(name = "version", required = false) String version,
                           UserEntity userSession) {
+        if(!Objects.isNull(userSession.getEmail())){
+            return BaseResult.build(StateCode.AUTH_ERROR_10032, "已绑定邮箱");
+        }
+
         UserEntity userEntity = new UserEntity();
         if (RegexUtil.isEmail(email)) {
             userEntity.setEmail(email);
@@ -354,17 +354,13 @@ public class AuthController {
         //获取uri 邮箱验证时用户访问页面
         //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        if (Objects.nonNull(userEntity.getEmail())) {
-            //发送Email 验证
-            //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(userSession.getName());
-            jc.set(md5+"_bind", userSession.getId() + "_"+email);
-            jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5), email);
-            return BaseResult.build(Ok, AuthConstants.MSG_OK);
-        }else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10023, "已绑定邮箱");
-        }
+        //发送Email 验证
+        //MD5去重算法生成mail验证
+        String md5 = Md5Helper.MD5.getMD5(userSession.getName());
+        jc.set(md5+"_bind", userSession.getId() + "_"+email);
+        jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5), email);
+        return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }
 
 
@@ -378,6 +374,10 @@ public class AuthController {
     public BaseResult unbindEmail(@RequestParam(name = "token", required = true) String token,
                                 @RequestParam(name = "version", required = false) String version,
                                 UserEntity userSession) {
+        if(Objects.isNull(userSession.getEmail())){
+            return BaseResult.build(StateCode.AUTH_ERROR_10030, "未绑定邮箱");
+        }
+
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userSession.getId());
         UserEntity user = userDao.queryUser(userEntity);
@@ -387,17 +387,13 @@ public class AuthController {
         //获取uri 邮箱验证时用户访问页面
         //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        if (!Objects.nonNull(userEntity.getEmail())) {
-            //发送Email 验证
-            //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(userSession.getName());
-            jc.set(md5+"_bind", userSession.getId() + "_"+user.getEmail());
-            jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
-            return BaseResult.build(Ok, AuthConstants.MSG_OK);
-        }else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10030, "未绑定邮箱");
-        }
+        //发送Email 验证
+        //MD5去重算法生成mail验证
+        String md5 = Md5Helper.MD5.getMD5(userSession.getName());
+        jc.set(md5+"_bind", userSession.getId() + "_"+user.getEmail());
+        jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
+        return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }
 
 
