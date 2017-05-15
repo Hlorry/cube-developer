@@ -368,6 +368,39 @@ public class AuthController {
     }
 
 
+    /**
+     * 修改邮箱发送验证邮件
+     *
+     * @return
+     */
+    @TokenVerify
+    @RequestMapping(value = "/email/unbind", method = RequestMethod.POST)
+    public BaseResult unbindEmail(@RequestParam(name = "token", required = true) String token,
+                                @RequestParam(name = "version", required = false) String version,
+                                UserEntity userSession) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userSession.getId());
+        UserEntity user = userDao.queryUser(userEntity);
+        if (Objects.isNull(user.getPhone())) {
+            return BaseResult.build(StateCode.AUTH_ERROR_10029, "未绑定手机，不能解绑邮箱");
+        }
+        //获取uri 邮箱验证时用户访问页面
+        //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+
+        if (!Objects.nonNull(userEntity.getEmail())) {
+            //发送Email 验证
+            //MD5去重算法生成mail验证
+            String md5 = Md5Helper.MD5.getMD5(userSession.getName());
+            jc.set(md5+"_bind", userSession.getId() + "_"+user.getEmail());
+            jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
+            return BaseResult.build(Ok, AuthConstants.MSG_OK);
+        }else {
+            return BaseResult.build(StateCode.AUTH_ERROR_10030, "未绑定邮箱");
+        }
+    }
+
+
 
     /**
      * 密码重置

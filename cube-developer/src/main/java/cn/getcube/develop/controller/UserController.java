@@ -6,6 +6,7 @@ import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
 import cn.getcube.develop.utils.*;
+import cn.getcube.develop.utils.redis.RedisKey;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.context.annotation.Scope;
@@ -248,7 +249,7 @@ public class UserController {
     }
 
     /**
-     * 手机验证
+     * 手机绑定
      *
      * @param token
      * @param msmCode
@@ -257,15 +258,23 @@ public class UserController {
      */
     @RequestMapping(value = "/phone/ver", method = RequestMethod.POST)
     @TokenVerify
-    public BaseResult param(@RequestParam(name = "token", required = true) String token,
+    public BaseResult ver(@RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "phone", required = true) String phone,
                               @RequestParam(name = "msmCode", required = true) String msmCode,
                               @RequestParam(name = "version", required = false) String version,
                               UserEntity userSession) {
 
-        String codeKey = jc.get(phone + "data");
+        String codeKey = jc.get(RedisKey.SMS_BIND+phone);
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+                UserEntity temp = new UserEntity();
+                temp.setPhone(phone);
+                UserEntity db = userService.queryUser(temp);
+                if(null!=db){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                }
+
+
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(userSession.getId());
                 userEntity.setPhone(phone);
@@ -273,7 +282,7 @@ public class UserController {
                 userEntity.setUpdate_time(new Date());
                 int updateUser = userService.updateUser(userEntity);
                 if (updateUser > 0) {
-                    jc.expire(phone + "data", 1);
+                    jc.del(RedisKey.SMS_BIND+phone);
                     return new DataResult<>(userEntity);
                 } else {
                     return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
@@ -286,6 +295,104 @@ public class UserController {
         }
 
     }
+
+
+    /**
+     * 手机绑定修改
+     *
+     * @param token
+     * @param msmCode
+     * @param version
+     * @return
+     */
+    @RequestMapping(value = "/phone/fix", method = RequestMethod.POST)
+    @TokenVerify
+    public BaseResult param(@RequestParam(name = "token", required = true) String token,
+                            @RequestParam(name = "phone", required = true) String phone,
+                            @RequestParam(name = "msmCode", required = true) String msmCode,
+                            @RequestParam(name = "version", required = false) String version,
+                            UserEntity userSession) {
+
+        String codeKey = jc.get(RedisKey.SMS_FIX+phone);
+        if (codeKey != null && !codeKey.equals("")) {
+            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+                UserEntity temp = new UserEntity();
+                temp.setPhone(phone);
+                UserEntity db = userService.queryUser(temp);
+                if(null!=db){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                }
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(userSession.getId());
+                userEntity.setPhone(phone);
+                userEntity.setPhone_verify(1);
+                userEntity.setUpdate_time(new Date());
+                int updateUser = userService.fixPhone(userEntity);
+                if (updateUser > 0) {
+                    jc.del(RedisKey.SMS_FIX+phone);
+                    return new DataResult<>(userEntity);
+                } else {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                }
+            } else {
+                return new DataResult<>(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+            }
+        } else {
+            return new DataResult<>(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        }
+
+    }
+
+
+    /**
+     * 解绑手机号
+     *
+     * @param token
+     * @param msmCode
+     * @param version
+     * @return
+     */
+    @RequestMapping(value = "/phone/unbind", method = RequestMethod.POST)
+    @TokenVerify
+    public BaseResult unbind(@RequestParam(name = "token", required = true) String token,
+                            @RequestParam(name = "msmCode", required = true) String msmCode,
+                            @RequestParam(name = "version", required = false) String version,
+                            UserEntity userSession) {
+
+        String codeKey = jc.get(RedisKey.SMS_UNBIND+userSession.getPhone());
+        if (codeKey != null && !codeKey.equals("")) {
+            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+                UserEntity temp = new UserEntity();
+                temp.setPhone(userSession.getPhone());
+                UserEntity db = userService.queryUser(temp);
+                if(null!=db){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                }
+
+                if(Objects.isNull(db.getEmail())){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10028,"未绑定邮箱，不能解绑手机");
+                }
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(userSession.getId());
+                userEntity.setPhone(null);
+                userEntity.setPhone_verify(0);
+                userEntity.setUpdate_time(new Date());
+                int updateUser = userService.fixPhone(userEntity);
+                if (updateUser > 0) {
+                    jc.del(RedisKey.SMS_FIX+userSession.getPhone());
+                    return new DataResult<>(userEntity);
+                } else {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
+                }
+            } else {
+                return new DataResult<>(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+            }
+        } else {
+            return new DataResult<>(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        }
+
+    }
+
 
     /**
      * 头像上传

@@ -111,6 +111,9 @@ public class SendMSMUtils {
                     case 4:
                         key = RedisKey.SMS_RESET;
                         break;
+                    case 5:
+                        key = RedisKey.SMS_UNBIND;
+                        break;
                 }
                 jc.set(key+phone, random);
                 jc.expire(key+phone, 5 * 60);

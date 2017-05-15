@@ -51,4 +51,12 @@ public interface UserService {
      */
     int fixEmail(UserEntity userEntity);
 
+
+    /**
+     * 修改手机号
+     *
+     * @param userEntity
+     */
+    int fixPhone(UserEntity userEntity);
+
 }

@@ -44,6 +44,9 @@ public interface AuthConstants {
     //手机绑定失败
     String PHONE_BINDING_ERROR = "phone binding error";
 
+    //手机绑定失败
+    String PHONE_UNBINDING_ERROR = "phone unbinding error";
+
     //验证失败
     String VERIFY_FAILED = "verify failed,please again write verify information";
 

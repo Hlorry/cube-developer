@@ -109,6 +109,9 @@ public class SMSsendController {
                 case 4:
                     code = jc.get(RedisKey.SMS_RESET+phone);
                     break;
+                case 5:
+                    code = jc.get(RedisKey.SMS_UNBIND+phone);
+                    break;
             }
             if(Objects.isNull(code)||!msmCode.equals(code)){
                 result.setCode(StateCode.Ok.getCode());

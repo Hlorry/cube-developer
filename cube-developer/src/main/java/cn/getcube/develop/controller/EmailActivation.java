@@ -148,4 +148,44 @@ public class EmailActivation {
         return "email-bind";
     }
 
+    /**
+     * 修改邮箱 验证连接
+     *
+     * @param actmd5 系统生成的字符串
+     * @return
+     */
+    @RequestMapping(value = "/unbind/activation", method = RequestMethod.GET)
+    public String emailUnbind(@RequestParam(name = "actmd5", required = true) String actmd5,@RequestParam(name = "version", required = false) String version,
+                            Model model) {
+        if (Objects.nonNull(actmd5)) {
+            String value = jc.get(actmd5+"_unbind");
+            if (value != null) {
+                jc.del(actmd5+"_unbind");
+                model.addAttribute("code", 200);
+                String userId = value.split("_")[0];
+                String email = value.split("_")[1];
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(Integer.valueOf(userId));
+                userEntity.setEmail(null);
+                UserEntity user = userDao.queryUser(userEntity);
+
+                if (Objects.isNull(user)) {
+                    model.addAttribute("code", 500);
+                    model.addAttribute("desc", "无效的链接");
+                }else {
+                    userEntity.setEmail(null);
+                    userDao.fixEmail(userEntity);
+                }
+            } else {
+                model.addAttribute("code", 500);
+                model.addAttribute("desc", "无效的链接");
+            }
+        } else {
+            model.addAttribute("code", 500);
+            model.addAttribute("desc", "无效的链接");
+        }
+        return "email-bind";
+    }
+
+
 }

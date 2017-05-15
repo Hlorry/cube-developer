@@ -93,6 +93,10 @@
         UPDATE d_user_password SET update_time = #{update_time} ,email = #{email} WHERE id = #{id}
     </update>
 
+    <update id="fixPhone" parameterType="userEntity">
+        UPDATE d_user_password SET update_time = #{update_time} ,phone = #{phone},phone_verify=#{PhoneVerify} WHERE id = #{id}
+    </update>
+
 
     <select id="login" parameterType="userEntity" resultType="userEntity">
         select * from d_user_password

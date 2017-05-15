@@ -47,6 +47,12 @@ public enum StateCode {
 
     AUTH_ERROR_10027(10027),            //验证码错误
 
+    AUTH_ERROR_10028(10028),            //未绑定邮箱，不能解绑手机
+    AUTH_ERROR_10029(10029),            //未绑定手机，不能解绑邮箱
+
+    AUTH_ERROR_10030(10030),            //未绑定邮箱
+    AUTH_ERROR_10031(10031),            //未绑定手机
+
     Unknown(20001),                     //未知错误
     APP_NAME_EXIST(10088),              //应用名称已存在
     APP_CREATE_ERROR(10089),            //创建应用出错

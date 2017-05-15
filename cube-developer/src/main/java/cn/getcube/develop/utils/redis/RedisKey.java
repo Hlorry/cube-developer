@@ -14,5 +14,6 @@ public class RedisKey {
 	public static final String SMS_RESET = "sms:reset";
 	public static final String SMS_BIND = "sms:bind";
 	public static final String SMS_FIX = "sms:fix";
+	public static final String SMS_UNBIND = "sms:unbind";
 
 }
