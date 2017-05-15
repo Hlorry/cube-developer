@@ -37,7 +37,7 @@ import java.util.Map;
  * @title developers
  */
 @RestController
-@RequestMapping(value = "/v1/app")
+@RequestMapping(value = "/app")
 @Scope("prototype")
 public class AppContentController {
     @Autowired
