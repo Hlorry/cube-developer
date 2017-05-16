@@ -316,22 +316,10 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.properties</include>
-                </includes>
                 <filtering>true</filtering>
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*.class</include>
-                    </includes>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

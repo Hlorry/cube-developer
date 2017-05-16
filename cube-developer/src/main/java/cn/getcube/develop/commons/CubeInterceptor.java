@@ -52,6 +52,9 @@ public class CubeInterceptor implements HandlerInterceptor {
             /**
              * 不进行拦截url
              */
+            if(requestUrl.contains("/css/") || requestUrl.contains("/img/") || requestUrl.contains("/js/")){
+                return true;
+            }
             for (String url : allowUrls) {
                 if (url.indexOf("*") != -1) {
                     String newUrl = url.substring(0, url.indexOf("/*"));
