@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -60,7 +61,7 @@ public class EmailActivation {
     }
 
     /**
-     * 修改邮箱 验证连接
+     * 修改邮箱
      *
      * @param actmd5 系统生成的字符串
      * @return
@@ -72,7 +73,6 @@ public class EmailActivation {
             String value = jc.get(actmd5+"_fix");
             if (value != null) {
                 jc.del(actmd5+"_fix");
-                model.addAttribute("id", value);
                 model.addAttribute("code", 200);
                 String userId = value.split("_")[0];
                 String email = value.split("_")[1];
@@ -85,27 +85,24 @@ public class EmailActivation {
                 UserEntity user2 = userDao.queryUser(userEntity1);
                 if(!Objects.isNull(user2)){
                     model.addAttribute("code", StateCode.AUTH_ERROR_10023);
-                    model.addAttribute("desc", "邮箱已被注册");
                 }else if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
-                    model.addAttribute("desc", "无效的链接");
                 }else {
                     userEntity.setEmail(email);
+                    userEntity.setUpdate_time(new Date());
                     userDao.fixEmail(userEntity);
                 }
             } else {
                 model.addAttribute("code", 500);
-                model.addAttribute("desc", "无效的链接");
             }
         } else {
             model.addAttribute("code", 500);
-            model.addAttribute("desc", "无效的链接");
         }
         return "email-fix";
     }
 
     /**
-     * 修改邮箱 验证连接
+     * 绑定邮箱
      *
      * @param actmd5 系统生成的字符串
      * @return
@@ -129,12 +126,11 @@ public class EmailActivation {
                 UserEntity user2 = userDao.queryUser(userEntity1);
                 if(!Objects.isNull(user2)){
                     model.addAttribute("code", StateCode.AUTH_ERROR_10023);
-                    model.addAttribute("desc", "邮箱已被注册");
                 }else if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
-                    model.addAttribute("desc", "无效的链接");
                 }else {
                     userEntity.setEmail(email);
+                    userEntity.setUpdate_time(new Date());
                     userDao.fixEmail(userEntity);
                 }
             } else {
@@ -149,7 +145,7 @@ public class EmailActivation {
     }
 
     /**
-     * 修改邮箱 验证连接
+     * 解绑邮箱
      *
      * @param actmd5 系统生成的字符串
      * @return
@@ -171,20 +167,18 @@ public class EmailActivation {
 
                 if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
-                    model.addAttribute("desc", "无效的链接");
                 }else {
                     userEntity.setEmail(null);
+                    userEntity.setUpdate_time(new Date());
                     userDao.fixEmail(userEntity);
                 }
             } else {
                 model.addAttribute("code", 500);
-                model.addAttribute("desc", "无效的链接");
             }
         } else {
             model.addAttribute("code", 500);
-            model.addAttribute("desc", "无效的链接");
         }
-        return "email-bind";
+        return "email-unbind";
     }
 
 

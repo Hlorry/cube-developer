@@ -267,13 +267,17 @@ public class UserController {
         String codeKey = jc.get(RedisKey.SMS_BIND+phone);
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+
+                if(!Objects.isNull(userSession.getPhone())){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10033,"已绑定手机");
+                }
                 UserEntity temp = new UserEntity();
                 temp.setPhone(phone);
                 UserEntity db = userService.queryUser(temp);
+
                 if(null!=db){
                     return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
                 }
-
 
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(userSession.getId());
@@ -316,9 +320,15 @@ public class UserController {
         String codeKey = jc.get(RedisKey.SMS_FIX+phone);
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+
+                if(Objects.isNull(userSession.getPhone())){
+                    return new DataResult<>(StateCode.AUTH_ERROR_10031,"未绑定手机");
+                }
+
                 UserEntity temp = new UserEntity();
                 temp.setPhone(phone);
                 UserEntity db = userService.queryUser(temp);
+
                 if(null!=db){
                     return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
                 }
@@ -362,12 +372,13 @@ public class UserController {
         String codeKey = jc.get(RedisKey.SMS_UNBIND+userSession.getPhone());
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
-                UserEntity temp = new UserEntity();
-                temp.setId(userSession.getId());
-                UserEntity db = userService.queryUser(temp);
                 if(Objects.isNull(userSession.getPhone())){
                     return new DataResult<>(StateCode.AUTH_ERROR_10031,"未绑定手机");
                 }
+
+                UserEntity temp = new UserEntity();
+                temp.setId(userSession.getId());
+                UserEntity db = userService.queryUser(temp);
 
                 if(Objects.isNull(db.getEmail())){
                     return new DataResult<>(StateCode.AUTH_ERROR_10028,"未绑定邮箱，不能解绑手机");
