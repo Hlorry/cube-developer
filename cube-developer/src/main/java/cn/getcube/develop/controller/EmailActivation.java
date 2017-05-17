@@ -46,7 +46,7 @@ public class EmailActivation {
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(Integer.valueOf(value));
                 UserEntity user = userDao.queryUser(userEntity);
-                jc.del(actmd5);
+                //jc.del(actmd5);
                 if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
                 }
