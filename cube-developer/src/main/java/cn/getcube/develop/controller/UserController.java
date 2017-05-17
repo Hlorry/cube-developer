@@ -3,10 +3,12 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
+import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
 import cn.getcube.develop.utils.*;
 import cn.getcube.develop.utils.redis.RedisKey;
+import cn.getcube.develop.utils.redis.UpdateUserRedis;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.context.annotation.Scope;
@@ -33,6 +35,9 @@ public class UserController {
     JedisCluster jc;
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserDao userDao;
 
     /**
      * 注册账号
@@ -240,9 +245,14 @@ public class UserController {
         userEntity.setId(userSession.getId());
         userEntity.setName(name);
         userEntity.setUpdate_time(new Date());
+
+        userSession.setUpdate_time(new Date());
+        userSession.setName(name);
         int updateUser = userService.updateUser(userEntity);
         if (updateUser > 0) {
-            return new DataResult<UserEntity>(userEntity);
+            //更新缓存
+            UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+            return new DataResult<>(userSession);
         } else {
             return new DataResult<UserEntity>(StateCode.AUTH_ERROR_10017.getCode(),AuthConstants.UPDATE_ERROR);
         }
@@ -287,6 +297,10 @@ public class UserController {
                 int updateUser = userService.updateUser(userEntity);
                 if (updateUser > 0) {
                     jc.del(RedisKey.SMS_BIND+phone);
+
+                    //更新缓存
+                    UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+
                     return new DataResult<>(userEntity);
                 } else {
                     return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
@@ -340,6 +354,10 @@ public class UserController {
                 int updateUser = userService.fixPhone(userEntity);
                 if (updateUser > 0) {
                     jc.del(RedisKey.SMS_FIX+phone);
+
+                    //更新缓存
+                    UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+
                     return new DataResult<>(userEntity);
                 } else {
                     return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
@@ -391,6 +409,9 @@ public class UserController {
                 int updateUser = userService.fixPhone(userEntity);
                 if (updateUser > 0) {
                     jc.del(RedisKey.SMS_UNBIND+userSession.getPhone());
+
+                    //更新缓存
+                    UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
                     return new DataResult<>(userEntity);
                 } else {
                     return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
@@ -428,6 +449,10 @@ public class UserController {
                 UserEntity user = userService.queryUser(userEntity);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("user",user);
+
+                //更新缓存
+                UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+
                 return new DataResult<>(jsonObject);
             } else {
                 return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.FACE_UPLOAD);

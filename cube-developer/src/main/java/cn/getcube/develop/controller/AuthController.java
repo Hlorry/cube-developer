@@ -199,7 +199,7 @@ public class AuthController {
         if (user != null && Objects.nonNull(userEntity.getEmail())) {
             //发送Email 验证
             //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(user.getName());
+            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5, user.getId() + "");
             jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
             //发送数据
@@ -274,7 +274,7 @@ public class AuthController {
         if (Objects.nonNull(userEntity.getEmail())) {
             //发送Email 验证
             //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(user.getName());
+            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5, user.getId() + "");
             jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
             EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
@@ -317,7 +317,7 @@ public class AuthController {
 
         //发送Email 验证
         //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(userSession.getName());
+        String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
         jc.set(md5+"_fix", userSession.getId() + "_"+email);
         jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
         EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5), email);
@@ -356,7 +356,7 @@ public class AuthController {
 
         //发送Email 验证
         //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(userSession.getName());
+        String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
         jc.set(md5+"_bind", userSession.getId() + "_"+email);
         jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
         EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5), email);
@@ -389,9 +389,9 @@ public class AuthController {
 
         //发送Email 验证
         //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(userSession.getName());
-        jc.set(md5+"_bind", userSession.getId() + "_"+user.getEmail());
-        jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+        String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
+        jc.set(md5+"_unbind", userSession.getId() + "_"+user.getEmail());
+        jc.expire(md5+"_unbind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
         EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
         return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }

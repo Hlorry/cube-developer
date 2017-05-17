@@ -3,6 +3,8 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.UserEntity;
+import cn.getcube.develop.utils.redis.UpdateUserRedis;
+import com.alibaba.fastjson.JSON;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -89,6 +91,10 @@ public class EmailActivation {
                     userEntity.setEmail(email);
                     userEntity.setUpdate_time(new Date());
                     userDao.fixEmail(userEntity);
+
+                    //更新缓存
+                    String token = jc.get("token"+userId);
+                    UpdateUserRedis.updateUser(jc,Integer.parseInt(userId),token,userDao);
                 }
             } else {
                 model.addAttribute("code", 500);
@@ -131,6 +137,11 @@ public class EmailActivation {
                     userEntity.setEmail(email);
                     userEntity.setUpdate_time(new Date());
                     userDao.fixEmail(userEntity);
+
+                    //更新缓存
+                    String token = jc.get("token"+userId);
+                    UpdateUserRedis.updateUser(jc,Integer.parseInt(userId),token,userDao);
+
                 }
             } else {
                 model.addAttribute("code", 500);
@@ -173,6 +184,9 @@ public class EmailActivation {
                     userEntity.setEmail(null);
                     userEntity.setUpdate_time(new Date());
                     userDao.fixEmail(userEntity);
+                    //更新缓存
+                    String token = jc.get("token"+userId);
+                    UpdateUserRedis.updateUser(jc,Integer.parseInt(userId),token,userDao);
                 }
             } else {
                 model.addAttribute("code", 500);
