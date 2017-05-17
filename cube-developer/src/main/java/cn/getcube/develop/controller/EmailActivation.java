@@ -40,22 +40,19 @@ public class EmailActivation {
             String value = jc.get(actmd5);
             if (value != null) {
                 model.addAttribute("code", 200);
-                model.addAttribute("desc", "ok");
+                model.addAttribute("key", actmd5);
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(Integer.valueOf(value));
                 UserEntity user = userDao.queryUser(userEntity);
                 jc.del(actmd5);
                 if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
-                    model.addAttribute("desc", "无效的链接");
                 }
             } else {
                 model.addAttribute("code", 500);
-                model.addAttribute("desc", "无效的链接");
             }
         } else {
             model.addAttribute("code", 500);
-            model.addAttribute("desc", "无效的链接");
         }
         return "password-new";
     }
@@ -76,6 +73,7 @@ public class EmailActivation {
                 model.addAttribute("code", 200);
                 String userId = value.split("_")[0];
                 String email = value.split("_")[1];
+                model.addAttribute("email",email);
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(Integer.valueOf(userId));
                 UserEntity user = userDao.queryUser(userEntity);
@@ -117,6 +115,7 @@ public class EmailActivation {
                 model.addAttribute("code", 200);
                 String userId = value.split("_")[0];
                 String email = value.split("_")[1];
+                model.addAttribute("email",email);
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(Integer.valueOf(userId));
                 UserEntity user = userDao.queryUser(userEntity);
@@ -160,6 +159,7 @@ public class EmailActivation {
                 model.addAttribute("code", 200);
                 String userId = value.split("_")[0];
                 String email = value.split("_")[1];
+                model.addAttribute("email",email);
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(Integer.valueOf(userId));
                 userEntity.setEmail(null);
@@ -167,6 +167,8 @@ public class EmailActivation {
 
                 if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
+                }else if(Objects.isNull(user.getPhone())){
+                    model.addAttribute("code", 501);
                 }else {
                     userEntity.setEmail(null);
                     userEntity.setUpdate_time(new Date());
