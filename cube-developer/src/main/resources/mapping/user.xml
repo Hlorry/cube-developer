@@ -40,6 +40,21 @@
         </if>
     </select>
 
+    <select id="queryExists"  parameterType="userEntity" resultType="java.lang.Integer">
+        SELECT count(id) FROM
+        d_user_password WHERE activation = 1
+        <if test="id != null">
+            and id = #{id}
+        </if>
+        <if test="email != null and email != ''">
+            and email = #{email}
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+
+    </select>
+
     <!--添加用户-->
     <insert id="addUser" parameterType="userEntity" useGeneratedKeys="true">
         <choose>
@@ -72,6 +87,12 @@
         </if>
         <if test="name != null">
             ,name = #{name}
+        </if>
+        <if test="create_time != null">
+            ,create_time = #{create_time}
+        </if>
+        <if test="update_time != null">
+            ,update_time = #{update_time}
         </if>
         <if test="phone != null">
             ,phone = #{phone}

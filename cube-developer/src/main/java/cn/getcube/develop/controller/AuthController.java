@@ -8,10 +8,8 @@ import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
-import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.service.CertifiedService;
 import cn.getcube.develop.utils.*;
-import org.springframework.asm.Type;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -210,39 +208,6 @@ public class AuthController {
             return BaseResult.build(Ok, AuthConstants.MSG_OK);
         } else {
             return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
-        }
-    }
-
-    /**
-     * 邮件注册验证接口
-     *
-     * @param actmd5  系统生成的字符串
-     *                当字符串为32位时表示注册账号验证，
-     *                当字符串位16位时表示密码重置验证。
-     * @param version
-     * @return
-     */
-    @RequestMapping(value = "/email/activation", method = RequestMethod.GET)
-    public BaseResult activation(@RequestParam(name = "actmd5", required = true) String actmd5,
-                                 @RequestParam(name = "version", required = false) String version) {
-        String value = jc.get(actmd5);
-        if (value != null && actmd5.length() == 32) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setId(Integer.valueOf(value));
-            userEntity.setUpdate_time(new Date());
-            userEntity.setActivation(1);
-            int updateUser = userDao.updateUser(userEntity);
-            if (updateUser > 0) {
-                //删除验证reidskey
-                jc.del(actmd5);
-                return BaseResult.build(Ok, AuthConstants.MSG_OK);
-            } else {
-                return BaseResult.build(StateCode.AUTH_ERROR_10021, "用户不存在");
-            }
-        } else if (Objects.isNull(value)) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10012, "Verify expired!");
-        } else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10000, "无权限使用");
         }
     }
 

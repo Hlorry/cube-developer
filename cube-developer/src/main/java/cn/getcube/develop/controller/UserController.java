@@ -63,8 +63,8 @@ public class UserController {
                 }
                 UserEntity param = new UserEntity();
                 param.setEmail(account);
-                UserEntity user = userService.queryUser(param);
-                if (user != null) {
+                int count = userService.queryExists(param);
+                if (count != 0) {
                     return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(), AuthConstants.EMAIL_EXISTS);
                 }
             } else {
@@ -75,8 +75,8 @@ public class UserController {
 
                 UserEntity param = new UserEntity();
                 param.setPhone(account);
-                UserEntity user = userService.queryUser(param);
-                if (user != null) {
+                int count = userService.queryExists(param);
+                if (count != 0) {
                     return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(), AuthConstants.PHONE_EXISTS);
                 }
             }
@@ -90,10 +90,17 @@ public class UserController {
                 userEntity.setWay(way);
             }
             userEntity.setCreate_time(new Date());
-            userEntity.setUpdate_time(new Date());
+//            userEntity.setUpdate_time(new Date());
 
             try {
-                userService.addUser(userEntity);
+                UserEntity user = userService.queryUser(userEntity);
+                if( user != null){
+                    userEntity.setId(user.getId());
+                    userService.updateUser(userEntity);
+                }else {
+                    userService.addUser(userEntity);
+                }
+
                 MessageUtils.getInstance().sendEmailOrPhone(jc, account, userEntity);
                 return new DataResult<>(userEntity);
             } catch (Exception e) {
@@ -186,6 +193,9 @@ public class UserController {
         if (userEntity == null) {
             return new DataResult<>(StateCode.AUTH_ERROR_10002.getCode(), AuthConstants.USER_PSD_ERROR);
         } else {
+            if(userService.queryExists(userEntity) == 0){
+                return new DataResult<>(StateCode.AUTH_ERROR_9997.getCode(), AuthConstants.ACTIVATION_FAILED);
+            }
 //            map.put("code", "0000");
 //            map.put("data", targetUrl);
             //TODO  此处加 tn_ 标注token 特殊性，后期优化删除，现在不动

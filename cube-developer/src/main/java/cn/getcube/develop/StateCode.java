@@ -15,6 +15,7 @@ public enum StateCode {
     SmsFailed(801),                     //手机验证吗无效或已被使用
     ParamInvalid(900),                   //参数不合法
 
+    AUTH_ERROR_9997(9997),               //账号未激活
     AUTH_ERROR_9998(9998),              //手机号格式错误
     AUTH_ERROR_9999(9999),              //短信发送失败
     AUTH_ERROR_10000(10000),            //无使用权限

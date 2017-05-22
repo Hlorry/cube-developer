@@ -24,6 +24,8 @@ public interface UserDao {
 
     UserEntity queryUser(UserEntity userEntity);
 
+    int queryExists(UserEntity userEntity);
+
     /**
      * 更新用户信息
      * @param userEntity
