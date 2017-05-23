@@ -4,7 +4,6 @@ import cn.getcube.develop.StateCode;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.utils.redis.UpdateUserRedis;
-import com.alibaba.fastjson.JSON;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +14,8 @@ import redis.clients.jedis.JedisCluster;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.Objects;
+
+import static cn.getcube.develop.StateCode.Ok;
 
 /**
  * Created by HL on 2017/5/8.
@@ -155,6 +156,7 @@ public class EmailActivation {
     }
 
     /**
+<<<<<<< Updated upstream
      * 解绑邮箱
      *
      * @param actmd5 系统生成的字符串
@@ -198,4 +200,46 @@ public class EmailActivation {
     }
 
 
+    /**
+     * 邮箱激活接口
+     * @param actmd5
+     * @param model
+     * @param version
+     * @return
+     */
+    @RequestMapping(value = "/email/activation", method = RequestMethod.GET)
+    public String activation(@RequestParam(name = "actmd5", required = true) String actmd5, Model model,
+                             @RequestParam(name = "version", required = false) String version) {
+        String value = jc.get(actmd5);
+        if (value != null && actmd5.length() == 32) {
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(Integer.valueOf(value));
+            userEntity.setUpdate_time(new Date());
+            userEntity.setActivation(1);
+            int state = userDao.queryExists(userEntity);
+            if(state == 0){
+                int updateUser = userDao.updateUser(userEntity);
+                model.addAttribute("email", userDao.queryUser(userEntity).getEmail());
+                if (updateUser > 0) {
+                    //删除验证reidskey
+                    jc.del(actmd5);
+                    model.addAttribute("code", Ok.getCode());
+                    return "activation";
+                } else {
+                    model.addAttribute("code", StateCode.AUTH_ERROR_10021.getCode());
+                    return "activation";
+                }
+            }else {
+                model.addAttribute("code", StateCode.AUTH_ERROR_10023.getCode());
+                return "activation";
+            }
+
+        } else if (Objects.isNull(value)) {
+            model.addAttribute("code", StateCode.AUTH_ERROR_10012.getCode());
+            return "activation";
+        } else {
+            model.addAttribute("code", StateCode.AUTH_ERROR_10000.getCode());
+            return "activation";
+        }
+    }
 }

@@ -38,6 +38,8 @@ public interface AuthConstants {
     //账户或者密码错误
     String USER_PSD_ERROR = "userName or password error";
 
+    String ACTIVATION_FAILED = "该账号没有激活，请激活后再登录！";
+
     //数据修改失败
     String UPDATE_ERROR = "data update failed";
 

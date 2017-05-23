@@ -39,6 +39,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public int queryExists(UserEntity userEntity) {
+        return userDao.queryExists(userEntity);
+    }
+
+    @Override
     public int updateUser(UserEntity userEntity) {
         int updateUser = userDao.updateUser(userEntity);
         return updateUser;
