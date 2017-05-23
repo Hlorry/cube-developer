@@ -1,9 +1,7 @@
 package cn.getcube.develop.utils;
 
-import cn.getcube.develop.AuthConstants;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -13,13 +11,13 @@ import java.util.Date;
  */
 public class FileUploadUtils {
     //用户头像存放地址
-    public static final String FILE_PATH_USERAVATAR = "cubeImage/userAvatar/";
+    public static final String FILE_PATH_USERAVATAR = "/cubeImage/userAvatar/";
     //认证图片存放地址
-    public static final String FILE_PATH_CERTIFIED = "cubeImage/certified/";
+    public static final String FILE_PATH_CERTIFIED = "/cubeImage/certified/";
     //身份证图片存放地址
-    public static final String FILE_PATH_IDCARD = "cubeImage/idCard/";
+    public static final String FILE_PATH_IDCARD = "/cubeImage/idCard/";
     //应用图片存放地址
-    public static final String FILE_PATH_APPAVATAR = "cubeImage/appAvatar/";
+    public static final String FILE_PATH_APPAVATAR = "/cubeImage/appAvatar/";
 
 
     /**
@@ -32,6 +30,9 @@ public class FileUploadUtils {
      */
     public static String uploadFile(MultipartFile file, int imageType) {
         String file_path = (imageType == 1 ? FILE_PATH_USERAVATAR : imageType == 2 ? FILE_PATH_CERTIFIED : FILE_PATH_IDCARD);
+
+        String canonicalPath = Thread.currentThread().getContextClassLoader().getResource("").getPath() + "static/";
+
         file_path = imageType == 4 ? FILE_PATH_APPAVATAR : file_path;
         String allFileName = file.getOriginalFilename();
         String fileName = getFileExtension(allFileName);
@@ -43,7 +44,7 @@ public class FileUploadUtils {
                 fileName.equals("jpg") ||
                 fileName.equals("bmp")) {
 
-            File tempFile = new File(AuthConstants.AUTH_FILE_PATH.replaceAll("\\\\", "/") + file_path, new Date().getTime() + "." + String.valueOf(fileName));
+            File tempFile = new File(canonicalPath.replaceAll("\\\\", "/") + file_path, new Date().getTime() + "." + String.valueOf(fileName));
             File tempFileParent = new File(tempFile.getParentFile().getParent());
             if (!tempFileParent.exists()) {
                 tempFileParent.mkdir();
@@ -56,7 +57,7 @@ public class FileUploadUtils {
                     tempFile.createNewFile();
                 }
                 file.transferTo(tempFile);
-                return "/" + file_path + tempFile.getName();
+                return file_path + tempFile.getName();
             } catch (IOException e) {
                 e.printStackTrace();
                 return "error";

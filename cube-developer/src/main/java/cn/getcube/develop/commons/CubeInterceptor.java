@@ -52,7 +52,7 @@ public class CubeInterceptor implements HandlerInterceptor {
             /**
              * 不进行拦截url
              */
-            if(requestUrl.contains("/css/") || requestUrl.contains("/img/") || requestUrl.contains("/js/")){
+            if(requestUrl.contains("/css/") || requestUrl.contains("/img/") || requestUrl.contains("/js/") || requestUrl.contains("/cubeImage/")){
                 return true;
             }
             for (String url : allowUrls) {
