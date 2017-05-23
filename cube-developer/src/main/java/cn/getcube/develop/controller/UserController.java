@@ -276,7 +276,7 @@ public class UserController {
      * @param version
      * @return
      */
-    @RequestMapping(value = "/phone/ver", method = RequestMethod.POST)
+    @RequestMapping(value = "/phone/verify", method = RequestMethod.POST)
     @TokenVerify
     public BaseResult ver(@RequestParam(name = "token", required = true) String token,
                               @RequestParam(name = "phone", required = true) String phone,
