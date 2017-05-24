@@ -155,6 +155,15 @@
             <!-- <scope>provided</scope> -->
         </dependency>
 
+        <!-- 阿里短信-->
+        <dependency>
+            <groupId>com.aliyun.mns</groupId>
+            <artifactId>aliyun-sdk-mns</artifactId>
+            <version>1.1.8</version>
+            <classifier>jar-with-dependencies</classifier>
+        </dependency>
+
+
         <!-- jstl -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -310,14 +319,54 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-sms</artifactId>
+            <version>3.0.0-rc1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cube.sms</groupId>
+            <artifactId>cube</artifactId>
+            <version>v1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}\src\main\resources\lib\cube-sms-service-v1.1.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>aliyun-java-sdk-core</groupId>
+            <artifactId>aliyun-java-sdk-core</artifactId>
+            <version>v2.4.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}\src\main\resources\lib\aliyun-java-sdk-core-2.4.2.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
+                <directory>src/main/webapp/WEB-INF/lib</directory>
+                <targetPath>BOOT-INF/lib/</targetPath>
+                <includes>
+                    <include>**/*.jar</include>
+                </includes>
             </resource>
+            <resource>
+                <directory>${basedir}/src/main/webapp</directory>
+                <!--注意此次必须要放在此目录下才能被访问到-->
+                <targetPath>META-INF/resources</targetPath>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+            </resource>
+
         </resources>
         <plugins>
             <plugin>
@@ -348,6 +397,19 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.allen.capturewebdata.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
             </plugin>
         </plugins>
     </build>
