@@ -1,5 +1,6 @@
 package cn.getcube.develop.utils;
 
+import cn.getcube.develop.AuthConstants;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -31,7 +32,7 @@ public class FileUploadUtils {
     public static String uploadFile(MultipartFile file, int imageType) {
         String file_path = (imageType == 1 ? FILE_PATH_USERAVATAR : imageType == 2 ? FILE_PATH_CERTIFIED : FILE_PATH_IDCARD);
 
-        String canonicalPath = Thread.currentThread().getContextClassLoader().getResource("").getPath() + "static/";
+//        String canonicalPath = Thread.currentThread().getContextClassLoader().getResource("").getPath() + "static/";
 
         file_path = imageType == 4 ? FILE_PATH_APPAVATAR : file_path;
         String allFileName = file.getOriginalFilename();
@@ -44,7 +45,7 @@ public class FileUploadUtils {
                 fileName.equals("jpg") ||
                 fileName.equals("bmp")) {
 
-            File tempFile = new File(canonicalPath.replaceAll("\\\\", "/") + file_path, new Date().getTime() + "." + String.valueOf(fileName));
+            File tempFile = new File(AuthConstants.AUTH_FILE_PATH.replaceAll("\\\\", "/") + file_path, new Date().getTime() + "." + String.valueOf(fileName));
             File tempFileParent = new File(tempFile.getParentFile().getParent());
             if (!tempFileParent.exists()) {
                 tempFileParent.mkdir();
