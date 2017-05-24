@@ -85,12 +85,12 @@ public class UserController {
             MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
             userEntity.setName(name);
             userEntity.setPassword(md5.getMD5());
-            userEntity.setUsertype(userType);
+            userEntity.setUsertype(null==userType?1:userType);
             if (way != null) {
                 userEntity.setWay(way);
             }
             userEntity.setCreate_time(new Date());
-//            userEntity.setUpdate_time(new Date());
+            userEntity.setUpdate_time(new Date());
 
             try {
                 UserEntity user = userService.queryUser(userEntity);
@@ -255,14 +255,12 @@ public class UserController {
         userEntity.setId(userSession.getId());
         userEntity.setName(name);
         userEntity.setUpdate_time(new Date());
-
-        userSession.setUpdate_time(new Date());
-        userSession.setName(name);
         int updateUser = userService.updateUser(userEntity);
         if (updateUser > 0) {
             //更新缓存
             UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
-            return new DataResult<>(userSession);
+            UserEntity user = userDao.queryUser(userEntity);
+            return new DataResult<>(user);
         } else {
             return new DataResult<UserEntity>(StateCode.AUTH_ERROR_10017.getCode(),AuthConstants.UPDATE_ERROR);
         }
