@@ -37,6 +37,11 @@ public class AppEntity {
      */
     private String appStage;
 
+	/**
+	 * 1、线上  2、线下 3、暂停
+	 */
+	private Integer appState;
+
     /**
      * 用户量级
      */
@@ -253,11 +258,20 @@ public class AppEntity {
 	public void setTest_useid(String test_useid) {
 		this.test_useid = test_useid;
 	}
+
+	public Integer getAppState() {
+		return appState;
+	}
+
+	public void setAppState(Integer appState) {
+		this.appState = appState;
+	}
+
 	public AppEntity(int id, String appId, String appName, String category, String description, String appStage,
-			String appUserLevel, Date createTime, Date modifyTime, String thumbSizeLength, String getThumbSizeWidth,
-			String appKey, String clientId, String clientSecret, int userId, String avatar, int checkType,
-			Date validityStart, Date validityEnd, String useServing, String useId, int environment, String test_appkey,
-			String test_appid, String test_useid) {
+					 String appUserLevel, Date createTime, Date modifyTime, String thumbSizeLength, String getThumbSizeWidth,
+					 String appKey, String clientId, String clientSecret, int userId, String avatar, int checkType,
+					 Date validityStart, Date validityEnd, String useServing, String useId, int environment, String test_appkey,
+					 String test_appid, String test_useid, Integer appState) {
 		super();
 		this.id = id;
 		this.appId = appId;
@@ -284,6 +298,7 @@ public class AppEntity {
 		this.test_appkey = test_appkey;
 		this.test_appid = test_appid;
 		this.test_useid = test_useid;
+		this.appState = appState;
 	}
 	public AppEntity() {
 		super();

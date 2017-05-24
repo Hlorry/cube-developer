@@ -15,9 +15,9 @@
     </select>
 
     <!-- 创建应用(Create) -->
-    <insert id="createApp" parameterType="cn.getcube.develop.para.AppPara"  useGeneratedKeys="true" keyProperty="id">
-        insert into d_app(appName,appStage,appUserLevel,category,description,createTime,modifyTime,clientId,clientSecret,thumb_size_length,thumb_size_width,userId,appId,appKey,checkType,validityStart,validityEnd,useServing,useId,environment,test_appid,test_appkey,test_useid)
-        values(#{appName},#{appStage},#{appUserLevel},#{category},#{description},#{createTime},#{modifyTime},#{clientId},#{clientSecret},#{length},#{width},#{userId},#{appId},#{appKey},#{checkType},#{validityStart},#{validityEnd},#{useServing},#{useId},#{environment},#{test_appid},#{test_appkey},#{test_useid})
+    <insert id="createApp" parameterType="cn.getcube.develop.para.AppPara" useGeneratedKeys="true" keyProperty="id">
+        insert into d_app(appName,appStage,appUserLevel,category,description,createTime,modifyTime,clientId,clientSecret,thumb_size_length,thumb_size_width,userId,appId,appKey,checkType,validityStart,validityEnd,useServing,useId,environment,test_appid,test_appkey,test_useid,appState)
+        values(#{appName},#{appStage},#{appUserLevel},#{category},#{description},#{createTime},#{modifyTime},#{clientId},#{clientSecret},#{length},#{width},#{userId},#{appId},#{appKey},#{checkType},#{validityStart},#{validityEnd},#{useServing},#{useId},#{environment},#{test_appid},#{test_appkey},#{test_useid},#{appState})
     </insert>
 
     <select id="isAppNameExits" parameterType="cn.getcube.develop.para.AppPara"
@@ -35,6 +35,10 @@
         update d_app set appName=#{appName},appStage=#{appStage},appUserLevel=#{appUserLevel},category=#{category},description=#{description},modifyTime=#{modifyTime} where appId = #{appId}
     </update>
 
+    <update id="updateAppState" parameterType="cn.getcube.develop.para.AppPara">
+        update d_app set app_state = #{appState} WHERE id = #{id}
+    </update>
+
     <update id="avatarAppByAppId" parameterType="cn.getcube.develop.para.AppPara">
         update d_app set avatar=#{avatar} where appId = #{appId}
     </update>
@@ -49,52 +53,53 @@
        	delete from d_app where appId = #{appId};
     </delete>
 
-    
+
     <delete id="updateEnvironment" parameterType="cn.getcube.develop.para.AppPara">
         update d_app set environment = #{environment},checkType=0 where appId = #{appId}
     </delete>
-    
+
     <select id="getAppinfoByAppid" parameterType="string" resultMap="appInfo">
     	select * from d_app where appid=#{appid}
     </select>
-    
+
     <select id="getAllUseid" resultType="string">
     	select useid from d_app where useid!='' and environment=1
     </select>
-    
+
     <resultMap type="cn.getcube.develop.para.AppInfo" id="appInfo">
-    	<id column="id" property="id"/>
-    	<result column="appId"	property="appid"/>
-    	<result column="appname" property="appName"/>
-    	<result column="category" property="category"/>
-    	<result column="description" property="description"/>
-    	<result column="appstage" property="appStage"/>
-    	<result column="appUserLevel" property="appUserLevel"/>
-    	<result column="createtime" property="createTime"/>
-		<result column="modifyTime" property="modifyTime"/>
-		<result column="thumd_size_length" property="thumd_size_length"/>
-		<result column="thumd_size_width" property="thumd_size_width"/>
-		<result column="appkey" property="appKey"/>
-		<result column="clientid" property="clientid"/>
-		<result column="clientSecret" property="clientSecret"/>
-		<result column="userid" property="userid"/>
-		<result column="checkType" property="checkType"/>
-		<result column="avatar" property="avatar"/>
-		<result column="validityStart" property="validityStart"/>
-		<result column="validityEnd" property="validityEnd"/>
-		<result column="environment" property="environment"/>
-		<result column="useId" property="useId"/>
-		
-		<result column="test_appid" property="test_appid"/>
-		<result column="test_appkey" property="test_appkey"/>
-		<result column="test_useId" property="test_useid"/>
-		<collection property="nodes" ofType="integer"  select="getNodes" column="appId">
-		</collection>
-		<collection property="testnodes" ofType="integer"  select="getNodes" column="test_appid">
-		</collection>
+        <id column="id" property="id"/>
+        <result column="appId" property="appid"/>
+        <result column="appname" property="appName"/>
+        <result column="category" property="category"/>
+        <result column="description" property="description"/>
+        <result column="appstage" property="appStage"/>
+        <result column="appState" property="appState"/>
+        <result column="appUserLevel" property="appUserLevel"/>
+        <result column="createtime" property="createTime"/>
+        <result column="modifyTime" property="modifyTime"/>
+        <result column="thumd_size_length" property="thumd_size_length"/>
+        <result column="thumd_size_width" property="thumd_size_width"/>
+        <result column="appkey" property="appKey"/>
+        <result column="clientid" property="clientid"/>
+        <result column="clientSecret" property="clientSecret"/>
+        <result column="userid" property="userid"/>
+        <result column="checkType" property="checkType"/>
+        <result column="avatar" property="avatar"/>
+        <result column="validityStart" property="validityStart"/>
+        <result column="validityEnd" property="validityEnd"/>
+        <result column="environment" property="environment"/>
+        <result column="useId" property="useId"/>
+
+        <result column="test_appid" property="test_appid"/>
+        <result column="test_appkey" property="test_appkey"/>
+        <result column="test_useId" property="test_useid"/>
+        <collection property="nodes" ofType="integer" select="getNodes" column="appId">
+        </collection>
+        <collection property="testnodes" ofType="integer" select="getNodes" column="test_appid">
+        </collection>
     </resultMap>
-    
-    <select id="getNodes"   resultType="integer">
+
+    <select id="getNodes" resultType="integer">
     	select nodeid from t_app_nodes where appid=#{test_appid}
     </select>
 </mapper>
