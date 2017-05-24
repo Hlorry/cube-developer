@@ -233,6 +233,11 @@ public class AuthController {
         if (Objects.isNull(user)) {
             return BaseResult.build(StateCode.AUTH_ERROR_10021, "No users");
         }
+
+        //没有激活不能找回密码
+        if (user.getActivation()==0) {
+            return BaseResult.build(StateCode.AUTH_ERROR_10034, "账号未激活");
+        }
         //获取uri 邮箱验证时用户访问页面
         //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
