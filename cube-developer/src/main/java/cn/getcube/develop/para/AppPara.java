@@ -23,6 +23,8 @@ public class AppPara {
 
     private String description;
 
+    private Integer appState;
+
     private String test_appid;
     private String test_appkey;
     private String test_useid;
@@ -68,6 +70,14 @@ public class AppPara {
      * 选择环境管理
      */
     private int environment;
+
+    public Integer getAppState() {
+        return appState;
+    }
+
+    public void setAppState(Integer appState) {
+        this.appState = appState;
+    }
 
     public int getId() {
         return id;

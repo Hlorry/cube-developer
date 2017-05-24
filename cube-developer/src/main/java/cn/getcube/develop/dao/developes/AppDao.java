@@ -24,6 +24,8 @@ public interface AppDao {
 
     void avatarAppByAppId(AppPara appPara);
 
+    int updateAppState(AppPara appPara);
+
     AppEntity isAppNameExits(AppPara appPara);
 
     AppEntity isAppNameExitsByAppId(AppPara appPara);

@@ -9,6 +9,7 @@ import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.service.AppService;
+import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.FileUploadUtils;
 import cn.getcube.develop.utils.MD5;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by Administrator on 2016/3/11.
@@ -60,6 +62,8 @@ public class AppController {
         }
         appPara.setCategory(category);
         appPara.setDescription(description);
+        //默认暂停
+        appPara.setAppState(3);
         return appService.createApp(appPara);
     }
 
@@ -93,6 +97,19 @@ public class AppController {
         appPara.setDescription(description);
         appPara.setAppId(appId);
         return appService.modifyApp(appPara);
+    }
+
+    /**
+     * 变更app 线上、线下、暂停状态
+     * @param token
+     * @return
+     */
+    @RequestMapping(value = "/update/state", method = RequestMethod.POST)
+    @TokenVerify
+    public BaseResult createApp(@RequestParam(name = "token", required = true) String token,
+                                                     @RequestParam(name = "id", required = true) Integer id,
+                                                     @RequestParam(name = "state", required = true) Integer state) {
+        return appService.updateAppState(id, state);
     }
 
     @RequestMapping(value = "/delete")

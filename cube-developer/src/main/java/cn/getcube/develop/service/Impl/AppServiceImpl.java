@@ -1,6 +1,7 @@
 package cn.getcube.develop.service.Impl;
 
 import cn.getcube.develop.AppConstants;
+import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.dao.developes.AppDao;
 import cn.getcube.develop.dao.developes.NodeDao;
@@ -11,6 +12,7 @@ import cn.getcube.develop.para.AppInfo;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.service.AppCacheService;
 import cn.getcube.develop.service.AppService;
+import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.Md5Helper;
 import org.springframework.stereotype.Service;
@@ -34,7 +36,7 @@ public class AppServiceImpl implements AppService {
 
     @Resource
     private NodeDao nodeDao;
-    
+
     @Resource
     private AppCacheService appCache;
 
@@ -59,24 +61,24 @@ public class AppServiceImpl implements AppService {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
 
-        List<String> ids=appDao.getAllUseid();
-		List<Map<String,Integer>> useids=new ArrayList<>();
-		int max=0;
-		String [] num,tmp=null;
-		if(ids!=null&&!ids.isEmpty()){
-			for(String e:ids){
-					num=e.split(",");
-					for(String ex:num){
-						tmp=ex.split("-");
-						Map<String, Integer> m=new HashMap<>();
-						m.put("start", Integer.valueOf(tmp[0]));
-						m.put("end", Integer.valueOf(tmp[1]));
-						max=Integer.valueOf(tmp[1])>max?Integer.valueOf(tmp[1]):max;
-						useids.add(m);
-					}
-			}
-		}
-        
+        List<String> ids = appDao.getAllUseid();
+        List<Map<String, Integer>> useids = new ArrayList<>();
+        int max = 0;
+        String[] num, tmp = null;
+        if (ids != null && !ids.isEmpty()) {
+            for (String e : ids) {
+                num = e.split(",");
+                for (String ex : num) {
+                    tmp = ex.split("-");
+                    Map<String, Integer> m = new HashMap<>();
+                    m.put("start", Integer.valueOf(tmp[0]));
+                    m.put("end", Integer.valueOf(tmp[1]));
+                    max = Integer.valueOf(tmp[1]) > max ? Integer.valueOf(tmp[1]) : max;
+                    useids.add(m);
+                }
+            }
+        }
+
         try {
             if (null != appDao.isAppNameExits(appPara)) {
                 dataResult.setCode(StateCode.APP_NAME_EXIST.getCode());
@@ -94,14 +96,14 @@ public class AppServiceImpl implements AppService {
                 Calendar date = Calendar.getInstance();
                 date.setTime(beginDate);
                 //date.set(Calendar.DATE, date.get(Calendar.DATE) + 30);
-                date.set(Calendar.YEAR,date.get(Calendar.YEAR)+1);
+                date.set(Calendar.YEAR, date.get(Calendar.YEAR) + 1);
                 Date endDate = dft.parse(dft.format(date.getTime()));
 
                 appPara.setValidityEnd(endDate);
 
-        		//生成100个id
+                //生成100个id
                 //appPara.setUseId((max+1)+"-"+(max+100));
-                appPara.setTest_useid((max+1)+"-"+(max+100));
+                appPara.setTest_useid((max + 1) + "-" + (max + 100));
                 appPara.setUseServing(AppConstants.USESERVING_JSON);
                 //测试环境1，生产环境2
                 appPara.setEnvironment(1);
@@ -111,15 +113,15 @@ public class AppServiceImpl implements AppService {
                 dataResult.setCode(StateCode.Ok.getCode());
                 dataResult.setDesc("Ok");
                 dataResult.setData(map);
-                
+
                 //随机获取一个默认测试节点
-                Integer nodeid=nodeDao.getOneDefaultTestNode();
-                if(nodeid==null){
-                	//默认测试节点不存在，随机获取一个测试节点
-                	nodeid=nodeDao.getOneTestNode();
+                Integer nodeid = nodeDao.getOneDefaultTestNode();
+                if (nodeid == null) {
+                    //默认测试节点不存在，随机获取一个测试节点
+                    nodeid = nodeDao.getOneTestNode();
                 }
-                Map<String,Object> para=new HashMap<>();
-               // para.put("appid", app_id);
+                Map<String, Object> para = new HashMap<>();
+                // para.put("appid", app_id);
                 para.put("appid", appPara.getTest_appid());
                 para.put("nodeid", nodeid);
                 nodeDao.insertAppNode(para);
@@ -132,6 +134,18 @@ public class AppServiceImpl implements AppService {
             dataResult.setDesc("create app error");
         }
         return dataResult;
+    }
+
+    @Override
+    public BaseResult updateAppState(Integer id, Integer state) {
+        AppPara appPara = new AppPara();
+        appPara.setId(id);
+        appPara.setAppState(state);
+        int appState = appDao.updateAppState(appPara);
+        if (appState > 0) {
+                return BaseResult.build(StateCode.Ok,AuthConstants.MSG_OK);
+        }
+        return BaseResult.build(StateCode.Unknown,"update app <state> error.");
     }
 
     @Override
@@ -170,7 +184,7 @@ public class AppServiceImpl implements AppService {
         try {
             AppPara appPara = new AppPara();
             //更新缓存
-            AppInfo info=appDao.getAppinfoByAppid(appId);
+            AppInfo info = appDao.getAppinfoByAppid(appId);
             appPara.setId(info.getId());
             appPara.setAppId(appId);
             appPara.setTest_appid(info.getTest_appid());
@@ -192,17 +206,17 @@ public class AppServiceImpl implements AppService {
             }
             // 根据应用ID进行删除操作
             try {
-				appDao.deleteApp(appPara);
-				appDao.delAppNodes(appPara);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			dataResult.setCode(StateCode.Ok.getCode());
+                appDao.deleteApp(appPara);
+                appDao.delAppNodes(appPara);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            dataResult.setCode(StateCode.Ok.getCode());
             dataResult.setDesc("Ok.");
             appCache.delAppInfo(info.getAppid());
             return dataResult;
         } catch (Exception exception) {
-        	exception.printStackTrace();
+            exception.printStackTrace();
             //map.put("code", "4006");
             //map.put("msg", "删除应用出错");
             dataResult.setCode(StateCode.Unknown.getCode());
@@ -238,7 +252,7 @@ public class AppServiceImpl implements AppService {
         } else if (integer > 0) {
             dataResult.setCode(StateCode.Ok.getCode());
             dataResult.setDesc("Ok.");
-          //更新缓存
+            //更新缓存
             appCache.refreshAppinfo(appId);
             return dataResult;
         } else {
@@ -265,41 +279,41 @@ public class AppServiceImpl implements AppService {
 
     }
 
-	
-	public String generateUseId(int length) {
-		List<String> ids=appDao.getAllUseid();
-		List<Map<String,Integer>> useids=new ArrayList<>();
-		int max=0;
-		if(ids!=null&&!ids.isEmpty()){
-			for(String e:ids){
-				try {
-					Map<String, Integer> m=new HashMap<>();
-					m.put("start", Integer.valueOf(e.split("-")[0]));
-					m.put("end", Integer.valueOf(e.split("-")[1]));
-					max=Integer.valueOf(e.split("-")[1])>max?Integer.valueOf(e.split("-")[1]):max;
-					useids.add(m);
-				} catch (NumberFormatException e1) {
-					
-				}
-			}
-		}
-		
-		return (max+1)+"-"+(max+length);
-	}
-	
-	public Map<String,Object> changeEnvironment(String appid){
-		AppPara para=new AppPara();
-		para.setAppId(appid);
-		para.setEnvironment(2);
-		Map<String,Object> map=new HashMap<>();
-		try {
-			appDao.updateEnvironment(para);
-			map.put("state", 200);
-			map.put("msg", "ok");
-		} catch (Exception e) {
-			map.put("state", 400);
-			map.put("msg", "服务器出错了");
-		}
-		return map;
-	}
+
+    public String generateUseId(int length) {
+        List<String> ids = appDao.getAllUseid();
+        List<Map<String, Integer>> useids = new ArrayList<>();
+        int max = 0;
+        if (ids != null && !ids.isEmpty()) {
+            for (String e : ids) {
+                try {
+                    Map<String, Integer> m = new HashMap<>();
+                    m.put("start", Integer.valueOf(e.split("-")[0]));
+                    m.put("end", Integer.valueOf(e.split("-")[1]));
+                    max = Integer.valueOf(e.split("-")[1]) > max ? Integer.valueOf(e.split("-")[1]) : max;
+                    useids.add(m);
+                } catch (NumberFormatException e1) {
+
+                }
+            }
+        }
+
+        return (max + 1) + "-" + (max + length);
+    }
+
+    public Map<String, Object> changeEnvironment(String appid) {
+        AppPara para = new AppPara();
+        para.setAppId(appid);
+        para.setEnvironment(2);
+        Map<String, Object> map = new HashMap<>();
+        try {
+            appDao.updateEnvironment(para);
+            map.put("state", 200);
+            map.put("msg", "ok");
+        } catch (Exception e) {
+            map.put("state", 400);
+            map.put("msg", "服务器出错了");
+        }
+        return map;
+    }
 }

@@ -2,6 +2,7 @@ package cn.getcube.develop.service;
 
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.para.AppPara;
+import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 
 import java.util.List;
@@ -16,6 +17,8 @@ public interface AppService {
     List<AppEntity> queryAllApps(AppPara appPara);
 
     DataResult<Map<String, Object>> createApp(AppPara appPara);
+
+    BaseResult updateAppState(Integer id, Integer state);
 
     DataResult<Map<String, Object>> modifyApp(AppPara appPara);
 
