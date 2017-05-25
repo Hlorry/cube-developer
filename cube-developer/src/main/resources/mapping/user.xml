@@ -96,7 +96,7 @@
         </if>
 
         <if test="phone_verify != null and phone_verify==1">
-            ,biz_verify = 1
+            ,phone_verify = 1
         </if>
 
         <if test="avatar != null">
@@ -111,7 +111,7 @@
     </update>
 
     <update id="fixPhone" parameterType="userEntity">
-        UPDATE d_user_password SET update_time = #{update_time} ,phone = #{phone},phone_verify=#{PhoneVerify} WHERE id = #{id}
+        UPDATE d_user_password SET update_time = #{update_time} ,phone = #{phone},phone_verify=#{phone_verify} WHERE id = #{id}
     </update>
 
 
