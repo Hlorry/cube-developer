@@ -89,13 +89,13 @@ public class SMSsendController {
                             @RequestParam(name = "type", required = true) Integer type,
                             @RequestParam(name = "msmCode", required = true) String msmCode) {
         BaseResult result = new BaseResult();
-        String code=null;
+        String code="";
         if(type>5||type<1){
             result.setCode(StateCode.ParamInvalid.getCode());
             result.setDesc("参数不合法！");
             return result;
         }
-        if(!RegexUtil.checkMobile(phone)){
+        if(RegexUtil.checkMobile(phone)){
             switch (type){
                 case 1:
                     code = jc.get(RedisKey.SMS_REG+phone);
@@ -113,7 +113,7 @@ public class SMSsendController {
                     code = jc.get(RedisKey.SMS_UNBIND+phone);
                     break;
             }
-            if(Objects.isNull(code)||!msmCode.equals(code)){
+            if(!Objects.isNull(code)||msmCode.equals(code)){
                 result.setCode(StateCode.Ok.getCode());
                 result.setDesc(AuthConstants.MSG_OK);
             }else{

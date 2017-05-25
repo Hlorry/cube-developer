@@ -268,6 +268,55 @@ public class UserController {
         }
     }
 
+
+    /**
+     * 手机号注册 激活
+     *
+     * @param msmCode
+     * @param version
+     * @return
+     */
+    @RequestMapping(value = "/phone/activation", method = RequestMethod.POST)
+    public BaseResult active(@RequestParam(name = "phone", required = true) String phone,
+                          @RequestParam(name = "msmCode", required = true) String msmCode,
+                          @RequestParam(name = "version", required = false) String version) {
+
+        String codeKey = jc.get(RedisKey.SMS_REG+phone);
+        if (codeKey != null && !codeKey.equals("")) {
+            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+
+                UserEntity temp = new UserEntity();
+                temp.setPhone(phone);
+                UserEntity db = userService.queryUser(temp);
+
+                if(null==db){
+                    return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
+                }else if(db.getActivation()==1){
+                    return new BaseResult(StateCode.AUTH_ERROR_10024,"手机号已被注册");
+                }
+
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(db.getId());
+                userEntity.setPhone_verify(1);
+                userEntity.setActivation(1);
+                userEntity.setUpdate_time(new Date());
+                int updateUser = userService.updateUser(userEntity);
+                if (updateUser > 0) {
+                    jc.del(RedisKey.SMS_BIND+phone);
+                    return new BaseResult(AuthConstants.MSG_OK);
+                } else {
+                    return new BaseResult(StateCode.Unknown.getCode(),"未知错误");
+                }
+            } else {
+                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+            }
+        } else {
+            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        }
+
+    }
+
+
     /**
      * 手机绑定
      *
