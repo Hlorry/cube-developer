@@ -55,7 +55,7 @@ public class SMSsendController {
     @PostMapping(value = "/send/code")
     public BaseResult send(@RequestParam(name = "phone", required = true) String phone,@RequestParam(name = "type", required = true) Integer type) {
         BaseResult result = new BaseResult();
-        if(type>4||type<1){
+        if(type>5||type<1){
             result.setCode(StateCode.ParamInvalid.getCode());
             result.setDesc("参数不合法！");
             return result;
@@ -90,7 +90,7 @@ public class SMSsendController {
                             @RequestParam(name = "msmCode", required = true) String msmCode) {
         BaseResult result = new BaseResult();
         String code=null;
-        if(type>4||type<1){
+        if(type>5||type<1){
             result.setCode(StateCode.ParamInvalid.getCode());
             result.setDesc("参数不合法！");
             return result;

@@ -61,6 +61,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int fixPhone(UserEntity userEntity) {
-        return userDao.fixEmail(userEntity);
+        return userDao.fixPhone(userEntity);
     }
 }

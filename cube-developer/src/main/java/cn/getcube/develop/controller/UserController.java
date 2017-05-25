@@ -23,6 +23,8 @@ import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import static org.apache.coyote.http11.Constants.a;
+
 /**
  * Created by SubDong on 2016/3/8.
  */
@@ -287,14 +289,14 @@ public class UserController {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
                 if(!Objects.isNull(userSession.getPhone())){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10033,"已绑定手机");
+                    return new BaseResult(StateCode.AUTH_ERROR_10033,"已绑定手机");
                 }
                 UserEntity temp = new UserEntity();
                 temp.setPhone(phone);
                 UserEntity db = userService.queryUser(temp);
 
                 if(null!=db){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                    return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
                 }
 
                 UserEntity userEntity = new UserEntity();
@@ -309,15 +311,15 @@ public class UserController {
                     //更新缓存
                     UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
 
-                    return new DataResult<>(userEntity);
+                    return new BaseResult(AuthConstants.MSG_OK);
                 } else {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                    return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
                 }
             } else {
-                return new DataResult<>(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
             }
         } else {
-            return new DataResult<>(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
         }
 
     }
@@ -344,7 +346,7 @@ public class UserController {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
                 if(Objects.isNull(userSession.getPhone())){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10031,"未绑定手机");
+                    return new BaseResult(StateCode.AUTH_ERROR_10031,"未绑定手机");
                 }
 
                 UserEntity temp = new UserEntity();
@@ -352,7 +354,7 @@ public class UserController {
                 UserEntity db = userService.queryUser(temp);
 
                 if(null!=db){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                    return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
                 }
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(userSession.getId());
@@ -366,15 +368,15 @@ public class UserController {
                     //更新缓存
                     UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
 
-                    return new DataResult<>(userEntity);
+                    return new BaseResult(AuthConstants.MSG_OK);
                 } else {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                    return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
                 }
             } else {
-                return new DataResult<>(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
             }
         } else {
-            return new DataResult<>(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
         }
 
     }
@@ -399,7 +401,7 @@ public class UserController {
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
                 if(Objects.isNull(userSession.getPhone())){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10031,"未绑定手机");
+                    return new BaseResult(StateCode.AUTH_ERROR_10031,"未绑定手机");
                 }
 
                 UserEntity temp = new UserEntity();
@@ -407,7 +409,7 @@ public class UserController {
                 UserEntity db = userService.queryUser(temp);
 
                 if(Objects.isNull(db.getEmail())){
-                    return new DataResult<>(StateCode.AUTH_ERROR_10028,"未绑定邮箱，不能解绑手机");
+                    return new BaseResult(StateCode.AUTH_ERROR_10028,"未绑定邮箱，不能解绑手机");
                 }
                 UserEntity userEntity = new UserEntity();
                 userEntity.setId(userSession.getId());
@@ -420,15 +422,15 @@ public class UserController {
 
                     //更新缓存
                     UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
-                    return new DataResult<>(userEntity);
+                    return new BaseResult(AuthConstants.MSG_OK);
                 } else {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
+                    return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
                 }
             } else {
-                return new DataResult<>(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
             }
         } else {
-            return new DataResult<>(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
         }
 
     }
