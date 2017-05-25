@@ -302,7 +302,7 @@ public class UserController {
                 userEntity.setUpdate_time(new Date());
                 int updateUser = userService.updateUser(userEntity);
                 if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_BIND+phone);
+                    jc.del(RedisKey.SMS_REG+phone);
                     return new BaseResult(AuthConstants.MSG_OK);
                 } else {
                     return new BaseResult(StateCode.Unknown.getCode(),"未知错误");
@@ -483,6 +483,58 @@ public class UserController {
         }
 
     }
+
+    /**
+     * 手机号找回密码
+     *
+     * @param msmCode
+     * @param version
+     * @return
+     */
+    @RequestMapping(value = "/phone/password", method = RequestMethod.POST)
+    public BaseResult password(@RequestParam(name = "msmCode", required = true) String msmCode,
+                               @RequestParam(name = "phone", required = true) String phone,
+                               @RequestParam(name = "password", required = true) String password,
+                              @RequestParam(name = "version", required = false) String version) {
+
+        String codeKey = jc.get(RedisKey.SMS_RESET+phone);
+        if (codeKey != null && !codeKey.equals("")) {
+            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+
+                UserEntity temp = new UserEntity();
+                temp.setPhone(phone);
+                UserEntity db = userService.queryUser(temp);
+
+                if(Objects.isNull(db)){
+                    return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
+                }
+
+                //没有激活不能找回密码
+                if (db.getActivation()==0) {
+                    return BaseResult.build(StateCode.AUTH_ERROR_10034, "账号未激活");
+                }
+
+                MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(db.getId());
+                userEntity.setPassword(md5.getMD5());
+                userEntity.setUpdate_time(new Date());
+                int updateUser = userService.updateUser(userEntity);
+                if (updateUser > 0) {
+                    jc.del(RedisKey.SMS_RESET+phone);
+                    return new BaseResult(AuthConstants.MSG_OK);
+                } else {
+                    return new BaseResult(StateCode.Unknown,"未知错误");
+                }
+            } else {
+                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+            }
+        } else {
+            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        }
+
+    }
+
 
 
     /**
