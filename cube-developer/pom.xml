@@ -155,15 +155,6 @@
             <!-- <scope>provided</scope> -->
         </dependency>
 
-        <!-- 阿里短信-->
-        <dependency>
-            <groupId>com.aliyun.mns</groupId>
-            <artifactId>aliyun-sdk-mns</artifactId>
-            <version>1.1.8.4</version>
-            <classifier>jar-with-dependencies</classifier>
-        </dependency>
-
-
         <!-- jstl -->
         <dependency>
             <groupId>javax.servlet</groupId>
