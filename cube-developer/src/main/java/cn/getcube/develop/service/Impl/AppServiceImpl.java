@@ -236,14 +236,18 @@ public class AppServiceImpl implements AppService {
         if (appId != null) {
             appPara.setAppId(appId);
         }
+        
+        //个人认证状态 暂时不要
+        /*
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
         UserEntity user = userDao.queryUser(userEntity);
+
         if (user.getBiz_verify() == 0) {
             dataResult.setCode(StateCode.AUTH_ERROR_10020.getCode());
             dataResult.setDesc("帐号认证审核中");
             return dataResult;
-        }
+        }*/
         Integer integer = appDao.updateEnvironment(appPara);
         if (integer == null) {
             dataResult.setCode(StateCode.APP_UPDATE_ENVIRONMENT_ERROR.getCode());

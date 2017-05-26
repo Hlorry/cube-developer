@@ -79,7 +79,7 @@
 
     <update id="updateUser" parameterType="userEntity">
         UPDATE d_user_password SET update_time = #{update_time}
-        <if test="activation != null">
+        <if test="activation != null and activation==1">
             ,activation = 1
         </if>
         <if test="password != null">
