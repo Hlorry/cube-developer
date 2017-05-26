@@ -84,7 +84,7 @@ public class EmailActivation {
                 UserEntity userEntity1 = new UserEntity();
                 userEntity1.setEmail(email);
                 UserEntity user2 = userDao.queryUser(userEntity1);
-                if(!Objects.isNull(user2)){
+                if(!Objects.isNull(user2)&&user2.getActivation()==1){
                     model.addAttribute("code", StateCode.AUTH_ERROR_10023);
                 }else if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
@@ -130,7 +130,7 @@ public class EmailActivation {
                 UserEntity userEntity1 = new UserEntity();
                 userEntity1.setEmail(email);
                 UserEntity user2 = userDao.queryUser(userEntity1);
-                if(!Objects.isNull(user2)){
+                if(!Objects.isNull(user2)&&user2.getActivation()==1){
                     model.addAttribute("code", StateCode.AUTH_ERROR_10023);
                 }else if (Objects.isNull(user)) {
                     model.addAttribute("code", 500);
@@ -156,7 +156,6 @@ public class EmailActivation {
     }
 
     /**
-<<<<<<< Updated upstream
      * 解绑邮箱
      *
      * @param actmd5 系统生成的字符串
@@ -224,22 +223,18 @@ public class EmailActivation {
                     //删除验证reidskey
                     jc.del(actmd5);
                     model.addAttribute("code", Ok.getCode());
-                    return "activation";
                 } else {
                     model.addAttribute("code", StateCode.AUTH_ERROR_10021.getCode());
-                    return "activation";
                 }
             }else {
                 model.addAttribute("code", StateCode.AUTH_ERROR_10023.getCode());
-                return "activation";
             }
 
         } else if (Objects.isNull(value)) {
             model.addAttribute("code", StateCode.AUTH_ERROR_10012.getCode());
-            return "activation";
         } else {
             model.addAttribute("code", StateCode.AUTH_ERROR_10000.getCode());
-            return "activation";
         }
+        return "activation";
     }
 }

@@ -344,7 +344,7 @@ public class UserController {
                 temp.setPhone(phone);
                 UserEntity db = userService.queryUser(temp);
 
-                if(null!=db){
+                if(null!=db&&db.getActivation()==1){
                     return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
                 }
 
@@ -402,7 +402,7 @@ public class UserController {
                 temp.setPhone(phone);
                 UserEntity db = userService.queryUser(temp);
 
-                if(null!=db){
+                if(null!=db&&db.getActivation()==1){
                     return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
                 }
                 UserEntity userEntity = new UserEntity();

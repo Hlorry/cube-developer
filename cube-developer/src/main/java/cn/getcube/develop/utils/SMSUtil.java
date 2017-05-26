@@ -44,7 +44,7 @@ public class SMSUtil {
         HashMap paramMap = new HashMap();
         paramMap.put("code", code);
         paramMap.put("product", name);
-            SMSServiceManager.getInstance().startup(RedisConnectionManager.getInstance().getBinaryJedisCluster());
+        SMSServiceManager.getInstance().startup(RedisConnectionManager.getInstance().getBinaryJedisCluster());
         SMSPublicService publicService = SMSServiceManager.getInstance().getPublicService(SMSBusinessName.PUBLIC, SMSServiceName.AliYun);
         SMSEntity smsEntity = new SMSEntity(SMSBusinessName.PUBLIC, tmpCode, signName, paramMap);
         return publicService.sendOnce(smsEntity, mobile);
