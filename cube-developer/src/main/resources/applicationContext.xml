@@ -87,6 +87,9 @@
     <bean id="sdkDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
           p:mapperInterface="cn.getcube.develop.dao.developes.SdkDao"/>
 
+    <bean id="chatKeFuDao" class="org.mybatis.spring.mapper.MapperFactoryBean"
+          p:mapperInterface="cn.getcube.develop.dao.developes.ChatKeFuDao"/>
+
     <!-- ====================== Additional Resources ======================= -->
 
 </beans>

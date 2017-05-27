@@ -32,7 +32,7 @@ public class AuthInvitationController {
     public BaseResult certifiedFind(@RequestParam(name = "token", required = false) String token,
                                     UserEntity userSession) {
         JSONObject mainJson = new JSONObject();
-        JSONObject license = new JSONObject();
+        /*JSONObject license = new JSONObject();
         license.put("expires", 1507132800000l);
         license.put("appid", "ac57297238834e7ab7db926b35f811c5");
         license.put("version", "1.8");
@@ -66,7 +66,7 @@ public class AuthInvitationController {
         user.put("displayName", "匿名用户");
         user.put("cube", 10070);
         user.put("userId", 10070);
-        mainJson.put("user", user);
+        mainJson.put("user", user);*/
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
         dataResult.setCode(StateCode.Ok.getCode());
         dataResult.setDesc(AuthConstants.MSG_OK);

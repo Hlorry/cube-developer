@@ -4,6 +4,7 @@ import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.utils.BaseResult;
+import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.UserSessionTokenVerify;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
@@ -113,7 +114,7 @@ public class TokenVerifyAspect {
             }
         }
         //必须 返回DataResult 不能是BaseResult
-        return BaseResult.build(StateCode.TokenFailed, "Token failure");
+        return DataResult.build(StateCode.TokenFailed, "Token failure");
     }
 
     private Method getCurrentMethod(ProceedingJoinPoint pjp) throws NoSuchMethodException {

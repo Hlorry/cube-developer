@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.getcube.develop.dao.developes.ChatKeFuDao">
+    <insert id="insertKeFu" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO d_kefu_info (name, cube, email, phone, avatar, createTime, updateTime)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.name}, #{item.cube}, #{item.email}, #{item.phone}, #{item.avatar}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertDevices" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO d_kefu_chat (id, deviceId, deviceCube, lastUseTime, keFuCube)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.deviceId}, #{item.deviceCube}, #{item.lastUseTime}, #{item.keFuCube})
+        </foreach>
+    </insert>
+
+    <insert id="insertDevice" parameterType="cn.getcube.develop.entity.ChatKeFuEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO d_kefu_chat (deviceId, deviceCube, lastUseTime, keFuCube)
+        VALUES (#{deviceId}, #{deviceCube}, #{lastUseTime}, #{keFuCube})
+    </insert>
+
+    <select id="findOneByLastUseTime" parameterType="cn.getcube.develop.entity.ChatKeFuEntity" resultType="cn.getcube.develop.entity.ChatKeFuEntity">
+        SELECT * FROM d_kefu_chat WHERE lastUseTime = 0 ORDER BY id ASC limit 1
+    </select>
+
+    <update id="updateChatKeFu" parameterType="cn.getcube.develop.entity.ChatKeFuEntity">
+        UPDATE d_kefu_chat SET deviceId = #{deviceId}, lastUseTime = #{lastUseTime}, keFuCube = #{keFuCube} WHERE deviceCube = #{deviceCube}
+    </update>
+
+    <select id="findKeFuById" parameterType="integer" resultType="cn.getcube.develop.entity.KeFuEntity">
+        SELECT * FROM d_kefu_info WHERE id = #{id}
+    </select>
+
+    <select id="findOneByDeviceId" parameterType="string" resultType="cn.getcube.develop.entity.ChatKeFuEntity">
+        SELECT * FROM d_kefu_chat WHERE deviceId = #{deviceId}
+    </select>
+
+    <select id="findOneByTopLastUseTime" resultType="cn.getcube.develop.entity.ChatKeFuEntity">
+        SELECT * FROM d_kefu_chat WHERE lastUseTime != 0 ORDER BY lastUseTime ASC limit 1
+    </select>
+
+</mapper>
