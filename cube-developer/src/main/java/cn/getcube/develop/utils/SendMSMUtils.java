@@ -67,7 +67,7 @@ public class SendMSMUtils {
                 jc.expire(key+phone, 5 * 60);
                 return 200;
             }else {
-                return 501;
+                return result.getStateCode().getCode();
             }
         } catch (Exception e) {
             e.printStackTrace();

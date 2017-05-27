@@ -66,9 +66,12 @@ public class SMSsendController {
                 result.setCode(StateCode.Ok.getCode());
                 result.setDesc("短信发送成功！");
             }else if(sendMessage == 501){
-                result.setCode(StateCode.AUTH_ERROR_10005.getCode());
+                result.setCode(StateCode.AUTH_ERROR_9999.getCode());
                 result.setDesc("短信发送失败！");
-            }else if(sendMessage == -1){
+            }else if(sendMessage ==404){
+                result.setCode(StateCode.AUTH_ERROR_10013.getCode());
+                result.setDesc("短信发送太频繁");
+            }else {
                 result.setCode(StateCode.AUTH_ERROR_100.getCode());
                 result.setDesc("未知错误,请重试！");
             }

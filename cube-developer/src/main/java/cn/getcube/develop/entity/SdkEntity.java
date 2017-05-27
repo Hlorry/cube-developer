@@ -1,5 +1,6 @@
 package cn.getcube.develop.entity;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -7,93 +8,129 @@ import java.util.Date;
  */
 public class SdkEntity {
 
-    private Integer switchs;
-
+    /**
+     * id
+     */
     private Integer id;
 
+    /**
+     * sdk名称
+     */
     private String type;
 
+    /**
+     * sdk版本号
+     */
     private String version;
 
-    private Date sdktime;
+    /**
+     * sdk更新时间
+     */
+    private String sdktime;
 
-    private Date createtime;
+    /**
+     * 此条消息创建时间
+     */
+    private Timestamp createtime;
 
+    /**
+     * sdk下载地址
+     */
+    private String sdk;
+
+    /**
+     * 应用演示地址
+     */
     private String showapp;
 
+    /**
+     * 文档下载地址
+     */
     private String doc;
 
-    private String showdoc;
+    /**
+     * 演示源码下载地址
+     */
+    private String showcode;
 
-    public Integer getSwitchs() {
-        return switchs;
-    }
+    /**
+     * 自述文件
+     */
+    private String file;
 
-    public void setSwitchs(Integer switchs) {
-        this.switchs = switchs;
-    }
+    /**
+     * 更新日志
+     */
+    private String updatelog;
 
-    public Integer getId() {
-        return id;
-    }
+    /**
+     * 更新时间
+     */
+    private Timestamp updatetime;
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    /**
+     * 是否启用当前配置
+     */
+    private Integer switchs;
 
-    public String getType() {
-        return type;
-    }
+    /**
+     * 全部下载连接
+     */
+    private String downAll;
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    public Integer getId() { return id; }
 
-    public String getVersion() {
-        return version;
-    }
+    public void setId(Integer id) { this.id = id; }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+    public String getType() { return type; }
 
-    public Date getSdktime() {
-        return sdktime;
-    }
+    public void setType(String type) { this.type = type; }
 
-    public void setSdktime(Date sdktime) {
-        this.sdktime = sdktime;
-    }
+    public String getVersion() { return version; }
 
-    public Date getCreatetime() {
-        return createtime;
-    }
+    public void setVersion(String version) { this.version = version; }
 
-    public void setCreatetime(Date createtime) {
-        this.createtime = createtime;
-    }
+    public String getSdktime() { return sdktime; }
 
-    public String getShowapp() {
-        return showapp;
-    }
+    public void setSdktime(String sdktime) { this.sdktime = sdktime; }
 
-    public void setShowapp(String showapp) {
-        this.showapp = showapp;
-    }
+    public Timestamp getCreatetime() { return createtime; }
 
-    public String getDoc() {
-        return doc;
-    }
+    public void setCreatetime(Timestamp createtime) { this.createtime = createtime; }
 
-    public void setDoc(String doc) {
-        this.doc = doc;
-    }
+    public String getSdk() { return sdk; }
 
-    public String getShowdoc() {
-        return showdoc;
-    }
+    public void setSdk(String sdk) { this.sdk = sdk; }
 
-    public void setShowdoc(String showdoc) {
-        this.showdoc = showdoc;
-    }
+    public String getShowapp() { return showapp; }
+
+    public void setShowapp(String showapp) { this.showapp = showapp; }
+
+    public String getDoc() { return doc; }
+
+    public void setDoc(String doc) { this.doc = doc; }
+
+    public String getShowcode() { return showcode; }
+
+    public void setShowcode(String showcode) { this.showcode = showcode; }
+
+    public String getFile() { return file; }
+
+    public void setFile(String file) { this.file = file; }
+
+    public String getUpdatelog() { return updatelog; }
+
+    public void setUpdatelog(String updatelog) { this.updatelog = updatelog; }
+
+    public Timestamp getUpdatetime() { return updatetime; }
+
+    public void setUpdatetime(Timestamp updatetime) { this.updatetime = updatetime; }
+
+    public Integer getSwitchs() { return switchs; }
+
+    public void setSwitchs(Integer switchs) { this.switchs = switchs; }
+
+    public String getDownAll() { return downAll; }
+
+    public void setDownAll(String downAll) { this.downAll = downAll; }
 }
