@@ -1,27 +1,15 @@
 package cn.getcube.develop.controller;
 
-import cn.getcube.develop.anaotation.TokenVerify;
-import cn.getcube.develop.entity.ChatKeFuEntity;
-import cn.getcube.develop.entity.KeFuEntity;
-import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.entity.UserSession;
-import cn.getcube.develop.service.ChatKeFuService;
-import cn.getcube.develop.service.UserService;
 import cn.getcube.develop.storage.ChatKeFuManager;
-import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.transaction.ChainedTransactionManager;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Administrator on 2017/5/26.
@@ -35,12 +23,18 @@ public class ChatKeFuController {
     ChatKeFuManager chatKeFuManager;
 
     @PostMapping("/kefu/chat")
-    @TokenVerify
     public DataResult<JSONObject> chatKeFu(@RequestParam(name = "token", required = false) String token,
                                            @RequestParam(name = "deviceId", required = true) String deviceId,
                                            UserSession userSession) {
         Integer masterId = 0;
-        return chatKeFuManager.chatKeFu(masterId, deviceId);
+        DataResult<JSONObject> jsonObjectDataResult = chatKeFuManager.chatKeFu(masterId, deviceId);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("expires", 1507132800000l);
+        jsonObject.put("appid", "ac57297238834e7ab7db926b35f811c5");
+        jsonObject.put("version", "1.8");
+        jsonObject.put("token", "f80925ff7f4a40a0b47dab52a07e241a");
+        jsonObjectDataResult.getData().put("license", jsonObject);
+        return jsonObjectDataResult;
     }
 
     @PostMapping("/insertData")

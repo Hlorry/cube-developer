@@ -21,6 +21,8 @@ public interface ChatKeFuDao {
 
     KeFuEntity findKeFuById(Integer id);
 
+    KeFuEntity findKeFuByCube(Integer cube);
+
     ChatKeFuEntity findOneByDeviceId(String deviceId);
 
     ChatKeFuEntity findOneByTopLastUseTime();

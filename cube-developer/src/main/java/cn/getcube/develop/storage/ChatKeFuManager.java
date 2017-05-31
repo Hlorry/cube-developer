@@ -27,6 +27,7 @@ public class ChatKeFuManager {
         try {
             lock.acquire(deviceId);
             ChatKeFuEntity chatKeFuEntity = chatKeFuDao.findOneByDeviceId(deviceId);
+            String kehuCube = null;
             if (chatKeFuEntity == null) {
                 chatKeFuEntity = this.getChatKeFu(deviceId);
                 if (chatKeFuEntity == null) {
@@ -36,11 +37,19 @@ public class ChatKeFuManager {
                     chatKeFuEntity.setDeviceCube(chatKeFuReUsed.getDeviceCube());
                     chatKeFuEntity.setLastUseTime(System.currentTimeMillis());
                     KeFuEntity keFuEntity = this.getKeFu(chatKeFuReUsed.getDeviceCube());
+                    kehuCube = chatKeFuReUsed.getDeviceCube();
                     if (keFuEntity != null) {
                         chatKeFuEntity.setKeFuCube(keFuEntity.getCube());
                     }
                     chatKeFuDao.updateChatKeFu(chatKeFuEntity);
                 }
+            }
+            if(kehuCube == null){
+                kehuCube = chatKeFuEntity.getKeFuCube();
+            }
+            KeFuEntity keFuEntity = this.getKeFu(kehuCube);
+            if (keFuEntity != null) {
+                chatKeFuEntity.setKehuInfo(keFuEntity);
             }
             return new DataResult<>(StateCode.Ok, "Ok", chatKeFuEntity.toJson());
         } catch (Exception e) {
@@ -52,7 +61,8 @@ public class ChatKeFuManager {
     }
 
     private KeFuEntity getKeFu(String deviceCube) {
-        Integer id = Integer.parseInt(deviceCube) % 5 + 1;
+        Integer id = Integer.parseInt(deviceCube) % 5;
+        id = (id == 0? 1:id);
         return chatKeFuDao.findKeFuById(id);
     }
 
@@ -70,6 +80,7 @@ public class ChatKeFuManager {
                 if (keFu != null)
                     chatKeFuEntity.setKeFuCube(keFu.getCube());
                 chatKeFuDao.updateChatKeFu(chatKeFuEntity);
+                chatKeFuEntity.setKehuInfo(keFu);
             }
         } catch (Exception e) {
         }finally {

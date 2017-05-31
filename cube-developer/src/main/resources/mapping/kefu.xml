@@ -35,6 +35,10 @@
         SELECT * FROM d_kefu_info WHERE id = #{id}
     </select>
 
+    <select id="findKeFuByCube" parameterType="String" resultType="cn.getcube.develop.entity.KeFuEntity">
+        SELECT * FROM d_kefu_info WHERE cube = #{kehuCube}
+    </select>
+
     <select id="findOneByDeviceId" parameterType="string" resultType="cn.getcube.develop.entity.ChatKeFuEntity">
         SELECT * FROM d_kefu_chat WHERE deviceId = #{deviceId}
     </select>

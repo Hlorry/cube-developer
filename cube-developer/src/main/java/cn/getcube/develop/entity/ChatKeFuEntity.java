@@ -20,6 +20,8 @@ public class ChatKeFuEntity {
 
     private String keFuCube;
 
+    private KeFuEntity kehuInfo;
+
     public ChatKeFuEntity() {
     }
 
@@ -71,13 +73,22 @@ public class ChatKeFuEntity {
         this.keFuCube = keFuCube;
     }
 
-    public JSONObject toJson(){
+    public KeFuEntity getKehuInfo() {
+        return kehuInfo;
+    }
+
+    public void setKehuInfo(KeFuEntity kehuInfo) {
+        this.kehuInfo = kehuInfo;
+    }
+
+    public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("deviceId", this.deviceId);
             jsonObject.put("deviceCube", this.deviceCube);
             jsonObject.put("lastUseTime", this.lastUseTime);
             jsonObject.put("keFuCube", this.keFuCube);
+            jsonObject.put("kehuInfo", this.kehuInfo);
         } catch (Exception e) {
             e.printStackTrace();
         }
