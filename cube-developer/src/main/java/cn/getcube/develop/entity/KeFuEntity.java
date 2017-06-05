@@ -19,6 +19,8 @@ public class KeFuEntity {
 
     private String avatar;
 
+    private String qq;
+
     private Date createTime;
 
     private Date updateTime;
@@ -98,5 +100,13 @@ public class KeFuEntity {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getQq() {
+        return qq;
+    }
+
+    public void setQq(String qq) {
+        this.qq = qq;
     }
 }
