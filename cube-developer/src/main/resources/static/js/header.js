@@ -2,6 +2,7 @@
 $('#mf-nav .mf-header-nav-text a').click(function() {
 	$(this).addClass('a-current').siblings().removeClass('a-current');
 	var texta = $(this).text();
+	console.log('1111',texta);
 	if(texta == '首页') {
 		window.location.href = 'http://cube.getcube.cn/index.html#header';
 	} else if(texta == '价格') {
@@ -9,30 +10,31 @@ $('#mf-nav .mf-header-nav-text a').click(function() {
 	} else if(texta == '下载') {
 		window.location.href = 'http://cube.getcube.cn/index.html#download';
 	} else if(texta == '开发手册') {
-		layui.use(['layer', 'form'], function() {
-			var layer = layui.layer,
-				form = layui.form();
-			layer.open({
-				content: '功能开发中！！'
-			});
-		});
+		 	/*var layer = layui.layer,
+		 		form = layui.form();
+		 	layer.open({
+		 		content: '功能开发中！！'
+		 	});*/
+		alert('功能开发中');
 
 	} else if(texta == '开发者社区') {
-		layui.use(['layer', 'form'], function() {
-			var layer = layui.layer,
-				form = layui.form();
-			layer.open({
-				content: '功能开发中！！'
-			});
-		});
+		// layui.use(['layer', 'form'], function() {
+		// 	var layer = layui.layer,
+		// 		form = layui.form();
+		// 	layer.open({
+		// 		content: '功能开发中！！'
+		// 	});
+		// });
+		alert('功能开发中！！');
 	} else if(texta == '关于我们') {
-		layui.use(['layer', 'form'], function() {
-			var layer = layui.layer,
-				form = layui.form();
-			layer.open({
-				content: '功能开发中！！'
-			});
-		});
+		// layui.use(['layer', 'form'], function() {
+		// 	var layer = layui.layer,
+		// 		form = layui.form();
+		// 	layer.open({
+		// 		content: '功能开发中！！'
+		// 	});
+		// });
+		alert('功能开发中！！');
 	} else {
 		window.location.href = 'http://cube.getcube.cn/login.html';
 	}
@@ -110,36 +112,36 @@ function IsPC() {
 };
 $(document).ready(function() {
 
-	var token1 = sessionStorage.token;
-	var port = commonProt + '/user/query_token';
-	var data1 = {
-		"token": token1
-	}
-	var succeed = '登录成功！！';
-	var failure = '您尚未登录！！';
-	if(token1 != undefined) {
-		require(['js/library.js'], function(library) {
-			library.aj(port, data1, succeed, failure, function(datum) {
-				if(datum.code == 200) {
-					$('.mf-last-img').show();
-					$('#mf-nav .mf-header-nav .nav-right').hide();
-					$('#mf-nav .mf-header-nav .mf-last-img').show();
-					bgimg();
-					console.log(succeed);
-				}
-				if(datum.code == 800) {
-					$('#mf-nav .mf-header-nav .nav-right').show();
-					$('#mf-nav .mf-header-nav .mf-last-img').hide();
-					console.log(failure);
-				}
-			});
-		});
-	} else {
-		$('.nav-right').show();
-		$('#mf-nav .mf-header-nav .mf-last-img').hide();
-		$('#mf-nav .mf-header-nav .mf-login-register').show();
-		console.log(failure);
-	}
+	// var token1 = sessionStorage.token;
+	// var port = commonProt + '/user/query_token';
+	// var data1 = {
+	// 	"token": token1
+	// }
+	// var succeed = '登录成功！！';
+	// var failure = '您尚未登录！！';
+	// if(token1 != undefined) {
+	// 	require(['js/library.js'], function(library) {
+	// 		library.aj(port, data1, succeed, failure, function(datum) {
+	// 			if(datum.code == 200) {
+	// 				$('.mf-last-img').show();
+	// 				$('#mf-nav .mf-header-nav .nav-right').hide();
+	// 				$('#mf-nav .mf-header-nav .mf-last-img').show();
+	// 				bgimg();
+	// 				console.log(succeed);
+	// 			}
+	// 			if(datum.code == 800) {
+	// 				$('#mf-nav .mf-header-nav .nav-right').show();
+	// 				$('#mf-nav .mf-header-nav .mf-last-img').hide();
+	// 				console.log(failure);
+	// 			}
+	// 		});
+	// 	});
+	// } else {
+	// 	$('.nav-right').show();
+	// 	$('#mf-nav .mf-header-nav .mf-last-img').hide();
+	// 	$('#mf-nav .mf-header-nav .mf-login-register').show();
+	// 	console.log(failure);
+	// }
 
 	/* 对不同设备进行操作 */
 	var isPC = IsPC();
@@ -175,5 +177,3 @@ $(document).ready(function() {
 	}
 
 });
-
-/* 判断是否已经登录注册 */

@@ -1,0 +1,25 @@
+/* 上部分进度条 */
+@media only screen and (max-device-width: 480px) {
+	#mf-main .mf-area{
+		width: 53rem;
+		margin-bottom: 10rem;
+	}
+	#mf-main .mf-area li:nth-of-type(odd) img{
+		width: 3rem;
+		height: 3rem;
+	}
+	#mf-main .mf-area .mf-wire,
+	#mf-main .mf-area .mf-wire img{
+		width: 16rem;
+		height: 3rem;
+	}
+	#mf-main .mf-area .mf-text li{
+		font-size: 2rem;
+	}
+	#mf-main .mf-area .mf-text li:first-child{
+		padding-right: 13rem;
+	}
+	#mf-main .mf-area .mf-text li:nth-child(2){
+		padding-right: 12rem;
+	}
+}
