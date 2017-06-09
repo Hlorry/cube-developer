@@ -93,7 +93,7 @@ public class SMSsendController {
                             @RequestParam(name = "msmCode", required = true) String msmCode) {
         BaseResult result = new BaseResult();
         String code="";
-        if(type>5||type<1){
+        if(type>6||type<1){
             result.setCode(StateCode.ParamInvalid.getCode());
             result.setDesc("参数不合法！");
             return result;
