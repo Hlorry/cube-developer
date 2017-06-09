@@ -2,7 +2,6 @@
 $('#mf-nav .mf-header-nav-text a').click(function() {
 	$(this).addClass('a-current').siblings().removeClass('a-current');
 	var texta = $(this).text();
-	console.log('1111',texta);
 	if(texta == '首页') {
 		window.location.href = 'http://cube.getcube.cn/index.html#header';
 	} else if(texta == '价格') {
@@ -10,31 +9,30 @@ $('#mf-nav .mf-header-nav-text a').click(function() {
 	} else if(texta == '下载') {
 		window.location.href = 'http://cube.getcube.cn/index.html#download';
 	} else if(texta == '开发手册') {
-		 	/*var layer = layui.layer,
+		 layui.use(['layer', 'form'], function() {
+		 	var layer = layui.layer,
 		 		form = layui.form();
 		 	layer.open({
 		 		content: '功能开发中！！'
-		 	});*/
-		alert('功能开发中');
+		 	});
+		 });
 
 	} else if(texta == '开发者社区') {
-		// layui.use(['layer', 'form'], function() {
-		// 	var layer = layui.layer,
-		// 		form = layui.form();
-		// 	layer.open({
-		// 		content: '功能开发中！！'
-		// 	});
-		// });
-		alert('功能开发中！！');
+		layui.use(['layer', 'form'], function() {
+			var layer = layui.layer,
+				form = layui.form();
+			layer.open({
+				content: '功能开发中！！'
+			});
+		});
 	} else if(texta == '关于我们') {
-		// layui.use(['layer', 'form'], function() {
-		// 	var layer = layui.layer,
-		// 		form = layui.form();
-		// 	layer.open({
-		// 		content: '功能开发中！！'
-		// 	});
-		// });
-		alert('功能开发中！！');
+		layui.use(['layer', 'form'], function() {
+			var layer = layui.layer,
+				form = layui.form();
+			layer.open({
+				content: '功能开发中！！'
+			});
+		});
 	} else {
 		window.location.href = 'http://cube.getcube.cn/login.html';
 	}
