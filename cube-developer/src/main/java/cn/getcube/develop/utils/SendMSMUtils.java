@@ -54,13 +54,16 @@ public class SendMSMUtils {
                         key = RedisKey.SMS_BIND;
                         break;
                     case 3:
-                        key = RedisKey.SMS_FIX;
+                        key = RedisKey.SMS_FIX_OLD;
                         break;
                     case 4:
                         key = RedisKey.SMS_RESET;
                         break;
                     case 5:
                         key = RedisKey.SMS_UNBIND;
+                        break;
+                    case 6:
+                        key = RedisKey.SMS_FIX_NEW;
                         break;
                 }
                 jc.set(key+phone, random);

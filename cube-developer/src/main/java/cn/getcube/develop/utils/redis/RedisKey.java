@@ -13,7 +13,8 @@ public class RedisKey {
 	public static final String SMS_REG = "sms:reg";
 	public static final String SMS_RESET = "sms:reset";
 	public static final String SMS_BIND = "sms:bind";
-	public static final String SMS_FIX = "sms:fix";
+	public static final String SMS_FIX_OLD = "sms:fix:old";
+	public static final String SMS_FIX_NEW = "sms:fix:new";
 	public static final String SMS_UNBIND = "sms:unbind";
 
 }

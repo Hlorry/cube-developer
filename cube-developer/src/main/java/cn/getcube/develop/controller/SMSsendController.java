@@ -55,7 +55,7 @@ public class SMSsendController {
     @PostMapping(value = "/send/code")
     public BaseResult send(@RequestParam(name = "phone", required = true) String phone,@RequestParam(name = "type", required = true) Integer type) {
         BaseResult result = new BaseResult();
-        if(type>5||type<1){
+        if(type>6||type<1){
             result.setCode(StateCode.ParamInvalid.getCode());
             result.setDesc("参数不合法！");
             return result;
@@ -107,7 +107,7 @@ public class SMSsendController {
                     code = jc.get(RedisKey.SMS_BIND+phone);
                     break;
                 case 3:
-                    code = jc.get(RedisKey.SMS_FIX+phone);
+                    code = jc.get(RedisKey.SMS_FIX_OLD+phone);
                     break;
                 case 4:
                     code = jc.get(RedisKey.SMS_RESET+phone);
@@ -115,8 +115,14 @@ public class SMSsendController {
                 case 5:
                     code = jc.get(RedisKey.SMS_UNBIND+phone);
                     break;
+                case 6:
+                    code = jc.get(RedisKey.SMS_FIX_NEW+phone);
+                    break;
             }
             if(!Objects.isNull(code)||msmCode.equals(code)){
+                if (type==3){
+                    jc.del(RedisKey.SMS_FIX_OLD+phone);
+                }
                 result.setCode(StateCode.Ok.getCode());
                 result.setDesc(AuthConstants.MSG_OK);
             }else{
