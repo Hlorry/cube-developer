@@ -11,19 +11,23 @@
     <fileSets>
         <fileSet>
             <directory>src/main/resources</directory>
-            <outputDirectory>/conf</outputDirectory>
+            <outputDirectory>./conf</outputDirectory>
             <filtered>true</filtered>
             <excludes>
                 <exclude>**/*.sh</exclude>
                 <exclude>**/assembly.xml</exclude>
             </excludes>
         </fileSet>
+        <fileSet>
+            <directory>src/main/resources/lib</directory>
+            <outputDirectory>./lib</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <files>
         <file>
             <source>src/main/resources/run.sh</source>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>./</outputDirectory>
             <fileMode>0755</fileMode>
             <filtered>true</filtered>
         </file>
