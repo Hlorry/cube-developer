@@ -390,7 +390,7 @@ public class UserController {
                             @RequestParam(name = "version", required = false) String version,
                             UserEntity userSession) {
 
-        String codeKey = jc.get(RedisKey.SMS_FIX+phone);
+        String codeKey = jc.get(RedisKey.SMS_FIX_NEW+phone);
         if (codeKey != null && !codeKey.equals("")) {
             if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
@@ -412,7 +412,7 @@ public class UserController {
                 userEntity.setUpdate_time(new Date());
                 int updateUser = userService.fixPhone(userEntity);
                 if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_FIX+phone);
+                    jc.del(RedisKey.SMS_FIX_NEW+phone);
 
                     //更新缓存
                     UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
