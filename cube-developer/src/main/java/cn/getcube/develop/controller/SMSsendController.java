@@ -119,7 +119,7 @@ public class SMSsendController {
                     code = jc.get(RedisKey.SMS_FIX_NEW+phone);
                     break;
             }
-            if(!Objects.isNull(code)||msmCode.equals(code)){
+            if(!Objects.isNull(code)&&msmCode.equals(code)){
                 if (type==3){
                     jc.del(RedisKey.SMS_FIX_OLD+phone);
                 }

@@ -84,7 +84,7 @@ public class AppController {
 
         // 验证输入值
         AppPara appPara = new AppPara();
-//        appPara.setUserId(userId == null ? 0 : Integer.parseInt(userId));
+        appPara.setUserId(userSession.getId());
         appPara.setAppName(appName);
         appPara.setAppStage(appStage);
         if ("1".equals(appStage)) {
