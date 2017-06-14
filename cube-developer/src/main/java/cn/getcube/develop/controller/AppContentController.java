@@ -6,22 +6,18 @@ import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.LoginLog;
 import cn.getcube.develop.entity.UserEntity;
-import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.para.LoginLogPara;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.service.LoginLogService;
 import cn.getcube.develop.utils.DataResult;
-import com.sun.org.apache.bcel.internal.generic.NEW;
+import cn.getcube.develop.zookeeper.SyncLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.AbstractView;
-import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +47,10 @@ public class AppContentController {
     public DataResult<Map> queryAppUser(@RequestParam(name = "token") String token,
                                         @RequestParam(name = "appId") String appId,
                                         UserEntity userSession) {
+        SyncLock lock = new SyncLock();
         DataResult<Map> result= new DataResult<>();
         try {
+            lock.acquire("app/"+token+"-"+appId);
             Map<String, Object> map = new HashMap<>();
             AppPara appPara = new AppPara();
             appPara.setAppId(appId);
@@ -70,6 +68,8 @@ public class AppContentController {
         }catch (Exception e){
             result.setCode(StateCode.Unknown.getCode());
             result.setDesc("Unknown error");
+        }finally {
+            lock.release();
         }
         return result;
     }

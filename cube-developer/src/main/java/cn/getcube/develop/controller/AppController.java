@@ -6,13 +6,13 @@ import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
 import cn.getcube.develop.entity.AppEntity;
 import cn.getcube.develop.entity.UserEntity;
-import cn.getcube.develop.entity.UserSession;
 import cn.getcube.develop.para.AppPara;
 import cn.getcube.develop.service.AppService;
 import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.DataResult;
 import cn.getcube.develop.utils.FileUploadUtils;
 import cn.getcube.develop.utils.MD5;
+import cn.getcube.develop.zookeeper.SyncLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Created by Administrator on 2016/3/11.
@@ -52,18 +51,27 @@ public class AppController {
         // 如果存在返回
         // 进行存储操作
 
-        // 验证输入值
-        AppPara appPara = new AppPara();
-        appPara.setUserId(userSession.getId());
-        appPara.setAppName(appName);
-        appPara.setAppStage(appStage);
-        if ("2".equals(appStage)) {// 运营中已有用户，设置用户量级
-            appPara.setAppUserLevel(appUserLevel);
+        SyncLock lock = new SyncLock();
+        AppPara appPara = null;
+        try {
+            lock.acquire("app/createApp/"+token);
+            // 验证输入值
+            appPara = new AppPara();
+            appPara.setUserId(userSession.getId());
+            appPara.setAppName(appName);
+            appPara.setAppStage(appStage);
+            if ("2".equals(appStage)) {// 运营中已有用户，设置用户量级
+                appPara.setAppUserLevel(appUserLevel);
+            }
+            appPara.setCategory(category);
+            appPara.setDescription(description);
+            //默认暂停
+            appPara.setAppState(3);
+        } catch (Exception e) {
+
+        } finally {
+            lock.release();
         }
-        appPara.setCategory(category);
-        appPara.setDescription(description);
-        //默认暂停
-        appPara.setAppState(3);
         return appService.createApp(appPara);
     }
 
@@ -81,21 +89,29 @@ public class AppController {
         // 判断用户名下该应用名称是否已经存在
         // 如果存在返回
         // 进行修改操作
+        SyncLock lock = new SyncLock();
+        AppPara appPara = null;
 
-        // 验证输入值
-        AppPara appPara = new AppPara();
+        try {
+            lock.acquire("app/updateApp/"+token);
+            // 验证输入值
+            appPara = new AppPara();
         appPara.setUserId(userSession.getId());
-        appPara.setAppName(appName);
-        appPara.setAppStage(appStage);
-        if ("1".equals(appStage)) {
-            appPara.setAppUserLevel(null);
+            appPara.setAppName(appName);
+            appPara.setAppStage(appStage);
+            if ("1".equals(appStage)) {
+                appPara.setAppUserLevel(null);
+            }
+            if ("2".equals(appStage)) {
+                appPara.setAppUserLevel(appUserLevel);
+            }
+            appPara.setCategory(category);
+            appPara.setDescription(description);
+            appPara.setAppId(appId);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
-        if ("2".equals(appStage)) {
-            appPara.setAppUserLevel(appUserLevel);
-        }
-        appPara.setCategory(category);
-        appPara.setDescription(description);
-        appPara.setAppId(appId);
         return appService.modifyApp(appPara);
     }
 
@@ -109,7 +125,17 @@ public class AppController {
     public BaseResult createApp(@RequestParam(name = "token", required = true) String token,
                                                      @RequestParam(name = "id", required = true) Integer id,
                                                      @RequestParam(name = "state", required = true) Integer state) {
-        return appService.updateAppState(id, state);
+        BaseResult result = null;
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("app/update/state"+token);
+            result = appService.updateAppState(id, state);
+        } catch (Exception e) {
+
+        } finally {
+            lock.release();
+        }
+        return result;
     }
 
     @RequestMapping(value = "/delete")
@@ -124,8 +150,18 @@ public class AppController {
         // 判断用户密码是否正确
         // 如果不正确返回
         // 根据应用ID进行删除操作
-        MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
-        return appService.deleteApp(appId, appName, md5.getMD5());
+        DataResult<Map<String, Object>> result = null;
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("/app/deleteApp"+token);
+            MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
+            result = appService.deleteApp(appId, appName, md5.getMD5());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.release();
+        }
+        return result;
     }
 
     @RequestMapping(value = "/query", method = RequestMethod.POST)
@@ -237,18 +273,25 @@ public class AppController {
                              @RequestParam(name = "appId") String appId) {
         Map<String, Object> map = new HashMap<>();
         DataResult<Map<String, Object>> dataResult = new DataResult<>();
-        String avatarUrl = FileUploadUtils.uploadFile(avatar, 4);
-        if (null == avatarUrl || avatarUrl.equals("error")) {
-            dataResult.setCode(StateCode.APP_UPLOAD_AVATAR_ERROR.getCode());
-            dataResult.setDesc("upload error.");
-            return dataResult;
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("app/avatar"+token);
+            String avatarUrl = FileUploadUtils.uploadFile(avatar, 4);
+            if (null == avatarUrl || avatarUrl.equals("error")) {
+                dataResult.setCode(StateCode.APP_UPLOAD_AVATAR_ERROR.getCode());
+                dataResult.setDesc("upload error.");
+                return dataResult;
+            }
+            AppPara appPara = new AppPara();
+            appPara.setAppId(appId);
+            appPara.setAvatar(avatarUrl);
+            dataResult = appService.avatarApp(appPara);
+            map.put("uri", HttpUriCode.HTTP_CODE_URI + avatarUrl);
+            dataResult.setData(map);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
-        AppPara appPara = new AppPara();
-        appPara.setAppId(appId);
-        appPara.setAvatar(avatarUrl);
-        dataResult = appService.avatarApp(appPara);
-        map.put("uri", HttpUriCode.HTTP_CODE_URI + avatarUrl);
-        dataResult.setData(map);
         return dataResult;
     }
 
@@ -258,12 +301,31 @@ public class AppController {
                                                   @RequestParam(name = "environment", required = false) String environment,
                                                   @RequestParam(name = "appId", required = false) String appId,
                                                        UserEntity userSession) {
-        return appService.updateEnvironment(environment, appId, userSession.getId());
+        DataResult<Map<String, Object>> result = null;
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("app/environment"+token);
+            result = appService.updateEnvironment(environment, appId, userSession.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.release();
+        }
+        return result;
     }
 
     @TokenVerify
     @RequestMapping(value = "/change_env", method = RequestMethod.POST)
     public Map<String, Object> changeEnvironment(@RequestParam(name = "token", required = true) String token,@RequestParam(name = "appid", required = true)String appid) {
-        return appService.changeEnvironment(appid);
+        Map<String, Object> map = null;
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("app/changeEnvironment"+token);
+            map = appService.changeEnvironment(appid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+        }
+        return map;
     }
 }
