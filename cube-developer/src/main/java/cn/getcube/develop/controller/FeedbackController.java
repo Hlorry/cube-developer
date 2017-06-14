@@ -2,6 +2,7 @@ package cn.getcube.develop.controller;
 
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
+import cn.getcube.develop.commons.zookeeper.SyncLock;
 import cn.getcube.develop.entity.FeedbackEntity;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.FeedbackService;
@@ -39,7 +40,10 @@ public class FeedbackController {
 		Date date = new Date();
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		feedbackEntity.setCreateTime(simpleDateFormat.format(date));
+
+		SyncLock lock = new SyncLock();
 		try {
+			lock.acquire("feedback/add/"+token);
 			feedbackService.add(feedbackEntity);
 
 			JSONObject jsonObject = new JSONObject();
@@ -47,6 +51,8 @@ public class FeedbackController {
 			return new DataResult<>(jsonObject);
 		} catch (Exception e) {
 			return new DataResult<>(StateCode.AUTH_ERROR_10009.getCode(), FeedbackConstants.CREATE_FAILED);
+		}finally {
+			lock.release();
 		}
 	}
 }

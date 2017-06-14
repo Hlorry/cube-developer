@@ -3,6 +3,7 @@ package cn.getcube.develop.controller;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
+import cn.getcube.develop.commons.zookeeper.SyncLock;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.UserEntity;
 import cn.getcube.develop.service.UserService;
@@ -21,9 +22,10 @@ import redis.clients.jedis.JedisCluster;
 
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
-
-import static org.apache.coyote.http11.Constants.a;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Created by SubDong on 2016/3/8.
@@ -53,61 +55,68 @@ public class UserController {
                                           @RequestParam(name = "userType", required = false) Integer userType,
                                           @RequestParam(name = "way", required = false) Integer way) {
         DataResult<UserEntity> result = new DataResult<>();
-        if (name != null && account != null && password != null) {
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("/user/register/"+account);
+            if (name != null && account != null && password != null) {
 
-            UserEntity userEntity = new UserEntity();
+                UserEntity userEntity = new UserEntity();
 
-            if (account.contains("@")) {
-                userEntity.setEmail(account);
-                //邮箱验证
-                if (!RegexUtil.isEmail(userEntity.getEmail())) {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(), AuthConstants.FORMAT_ERROR);
-                }
-                UserEntity param = new UserEntity();
-                param.setEmail(account);
-                int count = userService.queryExists(param);
-                if (count != 0) {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(), AuthConstants.EMAIL_EXISTS);
-                }
-            } else {
-                userEntity.setPhone(account);
-                if (!RegexUtil.checkMobile(userEntity.getPhone())) {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(), AuthConstants.PHONE_FORMAT_ERROR);
+                if (account.contains("@")) {
+                    userEntity.setEmail(account);
+                    //邮箱验证
+                    if (!RegexUtil.isEmail(userEntity.getEmail())) {
+                        return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(), AuthConstants.FORMAT_ERROR);
+                    }
+                    UserEntity param = new UserEntity();
+                    param.setEmail(account);
+                    int count = userService.queryExists(param);
+                    if (count != 0) {
+                        return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(), AuthConstants.EMAIL_EXISTS);
+                    }
+                } else {
+                    userEntity.setPhone(account);
+                    if (!RegexUtil.checkMobile(userEntity.getPhone())) {
+                        return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(), AuthConstants.PHONE_FORMAT_ERROR);
+                    }
+
+                    UserEntity param = new UserEntity();
+                    param.setPhone(account);
+                    int count = userService.queryExists(param);
+                    if (count != 0) {
+                        return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(), AuthConstants.PHONE_EXISTS);
+                    }
                 }
 
-                UserEntity param = new UserEntity();
-                param.setPhone(account);
-                int count = userService.queryExists(param);
-                if (count != 0) {
-                    return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(), AuthConstants.PHONE_EXISTS);
+                //MD5加密
+                MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
+                userEntity.setName(name);
+                userEntity.setPassword(md5.getMD5());
+                userEntity.setUsertype(null==userType?1:userType);
+                if (way != null) {
+                    userEntity.setWay(way);
+                }
+                userEntity.setCreate_time(new Date());
+                userEntity.setUpdate_time(new Date());
+
+                try {
+                    UserEntity user = userService.queryUser(userEntity);
+                    if( user != null){
+                        userEntity.setId(user.getId());
+                        userService.updateUser(userEntity);
+                    }else {
+                        userService.addUser(userEntity);
+                    }
+
+                    MessageUtils.getInstance().sendEmailOrPhone(jc, account, userEntity);
+                    return new DataResult<>(userEntity);
+                } catch (Exception e) {
+                    return new DataResult<>(StateCode.AUTH_ERROR_10009, AuthConstants.REGISTER_ERROR);
                 }
             }
-
-            //MD5加密
-            MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
-            userEntity.setName(name);
-            userEntity.setPassword(md5.getMD5());
-            userEntity.setUsertype(null==userType?1:userType);
-            if (way != null) {
-                userEntity.setWay(way);
-            }
-            userEntity.setCreate_time(new Date());
-            userEntity.setUpdate_time(new Date());
-
-            try {
-                UserEntity user = userService.queryUser(userEntity);
-                if( user != null){
-                    userEntity.setId(user.getId());
-                    userService.updateUser(userEntity);
-                }else {
-                    userService.addUser(userEntity);
-                }
-
-                MessageUtils.getInstance().sendEmailOrPhone(jc, account, userEntity);
-                return new DataResult<>(userEntity);
-            } catch (Exception e) {
-                return new DataResult<>(StateCode.AUTH_ERROR_10009, AuthConstants.REGISTER_ERROR);
-            }
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
         return new DataResult<>(StateCode.AUTH_ERROR_10009, AuthConstants.REGISTER_ERROR);
     }
@@ -253,19 +262,28 @@ public class UserController {
                                                   @RequestParam(name = "name", required = true) String name,
                                                   @RequestParam(name = "version", required = false) String version,
                                                  UserEntity userSession) {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userSession.getId());
-        userEntity.setName(name);
-        userEntity.setUpdate_time(new Date());
-        int updateUser = userService.updateUser(userEntity);
-        if (updateUser > 0) {
-            //更新缓存
-            UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
-            UserEntity user = userDao.queryUser(userEntity);
-            return new DataResult<>(user);
-        } else {
-            return new DataResult<UserEntity>(StateCode.AUTH_ERROR_10017.getCode(),AuthConstants.UPDATE_ERROR);
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/update/name/"+token);
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(userSession.getId());
+            userEntity.setName(name);
+            userEntity.setUpdate_time(new Date());
+            int updateUser = userService.updateUser(userEntity);
+            if (updateUser > 0) {
+                //更新缓存
+                UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+                UserEntity user = userDao.queryUser(userEntity);
+                return new DataResult<>(user);
+            } else {
+                return new DataResult<UserEntity>(StateCode.AUTH_ERROR_10017.getCode(),AuthConstants.UPDATE_ERROR);
+            }
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
+
+        return null;
     }
 
 
@@ -282,38 +300,46 @@ public class UserController {
                           @RequestParam(name = "version", required = false) String version) {
 
         String codeKey = jc.get(RedisKey.SMS_REG+phone);
-        if (codeKey != null && !codeKey.equals("")) {
-            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/phone/activation/"+phone);
+            if (codeKey != null && !codeKey.equals("")) {
+                if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
-                UserEntity temp = new UserEntity();
-                temp.setPhone(phone);
-                UserEntity db = userService.queryUser(temp);
+                    UserEntity temp = new UserEntity();
+                    temp.setPhone(phone);
+                    UserEntity db = userService.queryUser(temp);
 
-                if(null==db){
-                    return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
-                }else if(db.getActivation()==1){
-                    return new BaseResult(StateCode.AUTH_ERROR_10024,"手机号已被注册");
-                }
+                    if(null==db){
+                        return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
+                    }else if(db.getActivation()==1){
+                        return new BaseResult(StateCode.AUTH_ERROR_10024,"手机号已被注册");
+                    }
 
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(db.getId());
-                userEntity.setPhone_verify(1);
-                userEntity.setActivation(1);
-                userEntity.setUpdate_time(new Date());
-                int updateUser = userService.updateUser(userEntity);
-                if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_REG+phone);
-                    return new BaseResult(AuthConstants.MSG_OK);
+                    UserEntity userEntity = new UserEntity();
+                    userEntity.setId(db.getId());
+                    userEntity.setPhone_verify(1);
+                    userEntity.setActivation(1);
+                    userEntity.setUpdate_time(new Date());
+                    int updateUser = userService.updateUser(userEntity);
+                    if (updateUser > 0) {
+                        jc.del(RedisKey.SMS_REG+phone);
+                        return new BaseResult(AuthConstants.MSG_OK);
+                    } else {
+                        return new BaseResult(StateCode.Unknown.getCode(),"未知错误");
+                    }
                 } else {
-                    return new BaseResult(StateCode.Unknown.getCode(),"未知错误");
+                    return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
                 }
             } else {
-                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
             }
-        } else {
-            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
 
+        return null;
     }
 
 
@@ -333,43 +359,52 @@ public class UserController {
                               @RequestParam(name = "version", required = false) String version,
                               UserEntity userSession) {
 
-        String codeKey = jc.get(RedisKey.SMS_BIND+phone);
-        if (codeKey != null && !codeKey.equals("")) {
-            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/phone/verify/"+token);
+            String codeKey = jc.get(RedisKey.SMS_BIND+phone);
+            if (codeKey != null && !codeKey.equals("")) {
+                if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
-                if(!Objects.isNull(userSession.getPhone())){
-                    return new BaseResult(StateCode.AUTH_ERROR_10033,"已绑定手机");
-                }
-                UserEntity temp = new UserEntity();
-                temp.setPhone(phone);
-                UserEntity db = userService.queryUser(temp);
+                    if(!Objects.isNull(userSession.getPhone())){
+                        return new BaseResult(StateCode.AUTH_ERROR_10033,"已绑定手机");
+                    }
+                    UserEntity temp = new UserEntity();
+                    temp.setPhone(phone);
+                    UserEntity db = userService.queryUser(temp);
 
-                if(null!=db&&db.getActivation()==1){
-                    return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
-                }
+                    if(null!=db&&db.getActivation()==1){
+                        return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                    }
 
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(userSession.getId());
-                userEntity.setPhone(phone);
-                userEntity.setPhone_verify(1);
-                userEntity.setUpdate_time(new Date());
-                int updateUser = userService.updateUser(userEntity);
-                if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_BIND+phone);
+                    UserEntity userEntity = new UserEntity();
+                    userEntity.setId(userSession.getId());
+                    userEntity.setPhone(phone);
+                    userEntity.setPhone_verify(1);
+                    userEntity.setUpdate_time(new Date());
+                    int updateUser = userService.updateUser(userEntity);
+                    if (updateUser > 0) {
+                        jc.del(RedisKey.SMS_BIND+phone);
 
-                    //更新缓存
-                    UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+                        //更新缓存
+                        UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
 
-                    return new BaseResult(AuthConstants.MSG_OK);
+                        return new BaseResult(AuthConstants.MSG_OK);
+                    } else {
+                        return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                    }
                 } else {
-                    return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                    return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
                 }
             } else {
-                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
             }
-        } else {
-            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
+
+        return null;
 
     }
 
@@ -390,44 +425,51 @@ public class UserController {
                             @RequestParam(name = "version", required = false) String version,
                             UserEntity userSession) {
 
-        String codeKey = jc.get(RedisKey.SMS_FIX_NEW+phone);
-        if (codeKey != null && !codeKey.equals("")) {
-            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/phone/fix/"+token);
+            String codeKey = jc.get(RedisKey.SMS_FIX_NEW+phone);
+            if (codeKey != null && !codeKey.equals("")) {
+                if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
-                if(Objects.isNull(userSession.getPhone())){
-                    return new BaseResult(StateCode.AUTH_ERROR_10031,"未绑定手机");
-                }
+                    if(Objects.isNull(userSession.getPhone())){
+                        return new BaseResult(StateCode.AUTH_ERROR_10031,"未绑定手机");
+                    }
 
-                UserEntity temp = new UserEntity();
-                temp.setPhone(phone);
-                UserEntity db = userService.queryUser(temp);
+                    UserEntity temp = new UserEntity();
+                    temp.setPhone(phone);
+                    UserEntity db = userService.queryUser(temp);
 
-                if(null!=db&&db.getActivation()==1){
-                    return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
-                }
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(userSession.getId());
-                userEntity.setPhone(phone);
-                userEntity.setPhone_verify(1);
-                userEntity.setUpdate_time(new Date());
-                int updateUser = userService.fixPhone(userEntity);
-                if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_FIX_NEW+phone);
+                    if(null!=db&&db.getActivation()==1){
+                        return new BaseResult(StateCode.AUTH_ERROR_10024,AuthConstants.PHONE_EXISTS);
+                    }
+                    UserEntity userEntity = new UserEntity();
+                    userEntity.setId(userSession.getId());
+                    userEntity.setPhone(phone);
+                    userEntity.setPhone_verify(1);
+                    userEntity.setUpdate_time(new Date());
+                    int updateUser = userService.fixPhone(userEntity);
+                    if (updateUser > 0) {
+                        jc.del(RedisKey.SMS_FIX_NEW+phone);
 
-                    //更新缓存
-                    UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+                        //更新缓存
+                        UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
 
-                    return new BaseResult(AuthConstants.MSG_OK);
+                        return new BaseResult(AuthConstants.MSG_OK);
+                    } else {
+                        return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                    }
                 } else {
-                    return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_BINDING_ERROR);
+                    return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
                 }
             } else {
-                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
             }
-        } else {
-            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
-
+        return null;
     }
 
 
@@ -446,41 +488,49 @@ public class UserController {
                             @RequestParam(name = "version", required = false) String version,
                             UserEntity userSession) {
 
-        String codeKey = jc.get(RedisKey.SMS_UNBIND+userSession.getPhone());
-        if (codeKey != null && !codeKey.equals("")) {
-            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
-                if(Objects.isNull(userSession.getPhone())){
-                    return new BaseResult(StateCode.AUTH_ERROR_10031,"未绑定手机");
-                }
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/phone/unbind/"+token);
+            String codeKey = jc.get(RedisKey.SMS_UNBIND+userSession.getPhone());
+            if (codeKey != null && !codeKey.equals("")) {
+                if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+                    if(Objects.isNull(userSession.getPhone())){
+                        return new BaseResult(StateCode.AUTH_ERROR_10031,"未绑定手机");
+                    }
 
-                UserEntity temp = new UserEntity();
-                temp.setId(userSession.getId());
-                UserEntity db = userService.queryUser(temp);
+                    UserEntity temp = new UserEntity();
+                    temp.setId(userSession.getId());
+                    UserEntity db = userService.queryUser(temp);
 
-                if(Objects.isNull(db.getEmail())){
-                    return new BaseResult(StateCode.AUTH_ERROR_10028,"未绑定邮箱，不能解绑手机");
-                }
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(userSession.getId());
-                userEntity.setPhone(null);
-                userEntity.setPhone_verify(0);
-                userEntity.setUpdate_time(new Date());
-                int updateUser = userService.fixPhone(userEntity);
-                if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_UNBIND+userSession.getPhone());
+                    if(Objects.isNull(db.getEmail())){
+                        return new BaseResult(StateCode.AUTH_ERROR_10028,"未绑定邮箱，不能解绑手机");
+                    }
+                    UserEntity userEntity = new UserEntity();
+                    userEntity.setId(userSession.getId());
+                    userEntity.setPhone(null);
+                    userEntity.setPhone_verify(0);
+                    userEntity.setUpdate_time(new Date());
+                    int updateUser = userService.fixPhone(userEntity);
+                    if (updateUser > 0) {
+                        jc.del(RedisKey.SMS_UNBIND+userSession.getPhone());
 
-                    //更新缓存
-                    UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
-                    return new BaseResult(AuthConstants.MSG_OK);
+                        //更新缓存
+                        UpdateUserRedis.updateUser(jc,userSession.getId(),token,userDao);
+                        return new BaseResult(AuthConstants.MSG_OK);
+                    } else {
+                        return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
+                    }
                 } else {
-                    return new BaseResult(StateCode.AUTH_ERROR_10017,AuthConstants.PHONE_UNBINDING_ERROR);
+                    return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
                 }
             } else {
-                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
             }
-        } else {
-            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
+        return null;
 
     }
 
@@ -497,41 +547,49 @@ public class UserController {
                                @RequestParam(name = "password", required = true) String password,
                               @RequestParam(name = "version", required = false) String version) {
 
-        String codeKey = jc.get(RedisKey.SMS_RESET+phone);
-        if (codeKey != null && !codeKey.equals("")) {
-            if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/phone/password/"+phone);
+            String codeKey = jc.get(RedisKey.SMS_RESET+phone);
+            if (codeKey != null && !codeKey.equals("")) {
+                if ((msmCode.toLowerCase()).equals(codeKey.toLowerCase())) {
 
-                UserEntity temp = new UserEntity();
-                temp.setPhone(phone);
-                UserEntity db = userService.queryUser(temp);
+                    UserEntity temp = new UserEntity();
+                    temp.setPhone(phone);
+                    UserEntity db = userService.queryUser(temp);
 
-                if(Objects.isNull(db)){
-                    return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
-                }
+                    if(Objects.isNull(db)){
+                        return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
+                    }
 
-                //没有激活不能找回密码
-                if (db.getActivation()==0) {
-                    return BaseResult.build(StateCode.AUTH_ERROR_10034, "账号未激活");
-                }
+                    //没有激活不能找回密码
+                    if (db.getActivation()==0) {
+                        return BaseResult.build(StateCode.AUTH_ERROR_10034, "账号未激活");
+                    }
 
-                MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
-                UserEntity userEntity = new UserEntity();
-                userEntity.setId(db.getId());
-                userEntity.setPassword(md5.getMD5());
-                userEntity.setUpdate_time(new Date());
-                int updateUser = userService.updateUser(userEntity);
-                if (updateUser > 0) {
-                    jc.del(RedisKey.SMS_RESET+phone);
-                    return new BaseResult(AuthConstants.MSG_OK);
+                    MD5 md5 = new MD5.Builder().source(password).salt(AuthConstants.USER_SALT).build();
+                    UserEntity userEntity = new UserEntity();
+                    userEntity.setId(db.getId());
+                    userEntity.setPassword(md5.getMD5());
+                    userEntity.setUpdate_time(new Date());
+                    int updateUser = userService.updateUser(userEntity);
+                    if (updateUser > 0) {
+                        jc.del(RedisKey.SMS_RESET+phone);
+                        return new BaseResult(AuthConstants.MSG_OK);
+                    } else {
+                        return new BaseResult(StateCode.Unknown,"未知错误");
+                    }
                 } else {
-                    return new BaseResult(StateCode.Unknown,"未知错误");
+                    return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
                 }
             } else {
-                return new BaseResult(StateCode.AUTH_ERROR_10018,AuthConstants.VERIFY_FAILED);
+                return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
             }
-        } else {
-            return new BaseResult(StateCode.AUTH_ERROR_10012,AuthConstants.VERIFY_EXPIRE);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
+        return null;
 
     }
 
@@ -550,6 +608,9 @@ public class UserController {
                                @RequestParam(name = "file", required = true) MultipartFile file,
                                @RequestParam(name = "version", required = false) String version,
                                 UserEntity userSession) {
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("user/upload/"+token);
             String avatarUrl = FileUploadUtils.uploadFile(file, 1);
             UserEntity userEntity = new UserEntity();
             userEntity.setUpdate_time(new Date());
@@ -568,6 +629,11 @@ public class UserController {
             } else {
                 return new DataResult<>(StateCode.AUTH_ERROR_10017,AuthConstants.FACE_UPLOAD);
             }
+        } catch (Exception e) {
+        } finally {
+            lock.release();
+        }
+        return null;
     }
 
 }

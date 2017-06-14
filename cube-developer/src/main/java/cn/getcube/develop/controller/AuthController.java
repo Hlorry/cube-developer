@@ -5,6 +5,7 @@ import cn.getcube.develop.EmailConstants;
 import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
+import cn.getcube.develop.commons.zookeeper.SyncLock;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
 import cn.getcube.develop.entity.UserEntity;
@@ -159,7 +160,10 @@ public class AuthController {
         certifiedEntity.setCompanyWebsite(cpWebsite);
         certifiedEntity.setUserId(id);
         certifiedEntity.setType(0);
+
+        SyncLock lock = new SyncLock();
         try {
+            lock.acquire("/auth//certified/save/"+token);
             CertifiedEntity queryByUserId = certifiedService.queryByUserId(certifiedEntity.getUserId(),0);
             if (queryByUserId != null) {
                 result.setCode(StateCode.AUTH_ERROR_10019.getCode());
@@ -173,6 +177,8 @@ public class AuthController {
         } catch (Exception e) {
             result.setCode(StateCode.AUTH_ERROR_10007.getCode());
             result.setDesc("Failed to save authentication information");
+        }finally {
+            lock.release();
         }
         return result;
     }
@@ -186,29 +192,38 @@ public class AuthController {
     @RequestMapping(value = "/verify", method = RequestMethod.POST)
     public BaseResult product(@RequestParam(name = "account", required = true) String account,
                               @RequestParam(name = "version", required = false) String version) {
-        UserEntity userEntity = new UserEntity();
-        if (account.contains("@")) {
-            userEntity.setEmail(account);
-        } else {
-            userEntity.setPhone(account);
-        }
-        UserEntity user = userDao.queryUser(userEntity);
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/verify/"+ account);
+            UserEntity userEntity = new UserEntity();
+            if (account.contains("@")) {
+                userEntity.setEmail(account);
+            } else {
+                userEntity.setPhone(account);
+            }
+            UserEntity user = userDao.queryUser(userEntity);
 
-        if (user != null && Objects.nonNull(userEntity.getEmail())) {
-            //发送Email 验证
-            //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
-            jc.set(md5, user.getId() + "");
-            jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            //发送数据
-            EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
-            return BaseResult.build(Ok, AuthConstants.MSG_OK);
-        } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
-            SendMSMUtils.postRequest(account,null,1);
-            return BaseResult.build(Ok, AuthConstants.MSG_OK);
-        } else {
-            return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
+            if (user != null && Objects.nonNull(userEntity.getEmail())) {
+                //发送Email 验证
+                //MD5去重算法生成mail验证
+                String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
+                jc.set(md5, user.getId() + "");
+                jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
+                //发送数据
+                EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
+                return BaseResult.build(Ok, AuthConstants.MSG_OK);
+            } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
+                SendMSMUtils.postRequest(account,null,1);
+                return BaseResult.build(Ok, AuthConstants.MSG_OK);
+            } else {
+                return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.release();
         }
+        return null;
     }
 
     /**
@@ -221,42 +236,51 @@ public class AuthController {
     public BaseResult forget(@RequestParam(name = "account", required = true) String account,
                              @RequestParam(name = "version", required = false) String version) {
 
-        UserEntity userEntity = new UserEntity();
-        if (account.contains("@")) {
-            userEntity.setEmail(account);
-        } else {
-            userEntity.setPhone(account);
-        }
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth//password/forget/"+account);
+            UserEntity userEntity = new UserEntity();
+            if (account.contains("@")) {
+                userEntity.setEmail(account);
+            } else {
+                userEntity.setPhone(account);
+            }
 
-        UserEntity user = userDao.queryUser(userEntity);
+            UserEntity user = userDao.queryUser(userEntity);
 
-        if (Objects.isNull(user)) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10021, "No users");
-        }
+            if (Objects.isNull(user)) {
+                return BaseResult.build(StateCode.AUTH_ERROR_10021, "No users");
+            }
 
-        //没有激活不能找回密码
-        if (user.getActivation()==0) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10034, "账号未激活");
-        }
-        //获取uri 邮箱验证时用户访问页面
-        //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            //没有激活不能找回密码
+            if (user.getActivation()==0) {
+                return BaseResult.build(StateCode.AUTH_ERROR_10034, "账号未激活");
+            }
+            //获取uri 邮箱验证时用户访问页面
+            //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        if (Objects.nonNull(userEntity.getEmail())) {
-            //发送Email 验证
-            //MD5去重算法生成mail验证
-            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
-            jc.set(md5, user.getId() + "");
-            jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
-            return BaseResult.build(Ok, AuthConstants.MSG_OK);
-        } else {
-            int postRequest = SendMSMUtils.postRequest(account,null,4);
-            if (200==postRequest) {
+            if (Objects.nonNull(userEntity.getEmail())) {
+                //发送Email 验证
+                //MD5去重算法生成mail验证
+                String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
+                jc.set(md5, user.getId() + "");
+                jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
+                EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
                 return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else {
-                return BaseResult.build(StateCode.AUTH_ERROR_9999, "SMS send failure");
+                int postRequest = SendMSMUtils.postRequest(account,null,4);
+                if (200==postRequest) {
+                    return BaseResult.build(Ok, AuthConstants.MSG_OK);
+                } else {
+                    return BaseResult.build(StateCode.AUTH_ERROR_9999, "SMS send failure");
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.release();
         }
+        return null;
     }
 
     /**
@@ -271,26 +295,33 @@ public class AuthController {
                           @RequestParam(name = "email", required = true) String email,
                           @RequestParam(name = "version", required = false) String version,
                           UserEntity userSession) {
-        UserEntity userEntity = new UserEntity();
-        if (RegexUtil.isEmail(email)) {
-            userEntity.setEmail(email);
-        }else {
-            return BaseResult.build(AUTH_ERROR_10004, AuthConstants.FORMAT_ERROR);
-        }
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/email/fix"+token);
+            UserEntity userEntity = new UserEntity();
+            if (RegexUtil.isEmail(email)) {
+                userEntity.setEmail(email);
+            }else {
+                return BaseResult.build(AUTH_ERROR_10004, AuthConstants.FORMAT_ERROR);
+            }
 
-        UserEntity user = userDao.queryUser(userEntity);
-        if (!Objects.isNull(user)) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10023, "邮箱已被注册");
-        }
-        //获取uri 邮箱验证时用户访问页面
-        //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            UserEntity user = userDao.queryUser(userEntity);
+            if (!Objects.isNull(user)) {
+                return BaseResult.build(StateCode.AUTH_ERROR_10023, "邮箱已被注册");
+            }
+            //获取uri 邮箱验证时用户访问页面
+            //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        //发送Email 验证
-        //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
-        jc.set(md5+"_fix", userSession.getId() + "_"+email);
-        jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5), email);
+            //发送Email 验证
+            //MD5去重算法生成mail验证
+            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
+            jc.set(md5+"_fix", userSession.getId() + "_"+email);
+            jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5), email);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
+        }
         return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }
 
@@ -306,30 +337,37 @@ public class AuthController {
                           @RequestParam(name = "email", required = true) String email,
                           @RequestParam(name = "version", required = false) String version,
                           UserEntity userSession) {
-        if(!Objects.isNull(userSession.getEmail())){
-            return BaseResult.build(StateCode.AUTH_ERROR_10032, "已绑定邮箱");
-        }
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/email/bind/"+token);
+            if(!Objects.isNull(userSession.getEmail())){
+                return BaseResult.build(StateCode.AUTH_ERROR_10032, "已绑定邮箱");
+            }
 
-        UserEntity userEntity = new UserEntity();
-        if (RegexUtil.isEmail(email)) {
-            userEntity.setEmail(email);
-        }else {
-            return BaseResult.build(AUTH_ERROR_10004, AuthConstants.FORMAT_ERROR);
-        }
+            UserEntity userEntity = new UserEntity();
+            if (RegexUtil.isEmail(email)) {
+                userEntity.setEmail(email);
+            }else {
+                return BaseResult.build(AUTH_ERROR_10004, AuthConstants.FORMAT_ERROR);
+            }
 
-        UserEntity user = userDao.queryUser(userEntity);
-        if (!Objects.isNull(user)) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10023, "邮箱已被注册");
-        }
-        //获取uri 邮箱验证时用户访问页面
-        //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            UserEntity user = userDao.queryUser(userEntity);
+            if (!Objects.isNull(user)) {
+                return BaseResult.build(StateCode.AUTH_ERROR_10023, "邮箱已被注册");
+            }
+            //获取uri 邮箱验证时用户访问页面
+            //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        //发送Email 验证
-        //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
-        jc.set(md5+"_bind", userSession.getId() + "_"+email);
-        jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5), email);
+            //发送Email 验证
+            //MD5去重算法生成mail验证
+            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
+            jc.set(md5+"_bind", userSession.getId() + "_"+email);
+            jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5), email);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
+        }
         return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }
 
@@ -344,25 +382,32 @@ public class AuthController {
     public BaseResult unbindEmail(@RequestParam(name = "token", required = true) String token,
                                 @RequestParam(name = "version", required = false) String version,
                                 UserEntity userSession) {
-        if(Objects.isNull(userSession.getEmail())){
-            return BaseResult.build(StateCode.AUTH_ERROR_10030, "未绑定邮箱");
-        }
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/email/unbind/"+token);
+            if(Objects.isNull(userSession.getEmail())){
+                return BaseResult.build(StateCode.AUTH_ERROR_10030, "未绑定邮箱");
+            }
 
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userSession.getId());
-        UserEntity user = userDao.queryUser(userEntity);
-        if (Objects.isNull(user.getPhone())) {
-            return BaseResult.build(StateCode.AUTH_ERROR_10029, "未绑定手机，不能解绑邮箱");
-        }
-        //获取uri 邮箱验证时用户访问页面
-        //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(userSession.getId());
+            UserEntity user = userDao.queryUser(userEntity);
+            if (Objects.isNull(user.getPhone())) {
+                return BaseResult.build(StateCode.AUTH_ERROR_10029, "未绑定手机，不能解绑邮箱");
+            }
+            //获取uri 邮箱验证时用户访问页面
+            //String uri = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
-        //发送Email 验证
-        //MD5去重算法生成mail验证
-        String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
-        jc.set(md5+"_unbind", userSession.getId() + "_"+user.getEmail());
-        jc.expire(md5+"_unbind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-        EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
+            //发送Email 验证
+            //MD5去重算法生成mail验证
+            String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
+            jc.set(md5+"_unbind", userSession.getId() + "_"+user.getEmail());
+            jc.expire(md5+"_unbind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
+        } catch (Exception e) {
+        } finally {
+            lock.release();
+        }
         return BaseResult.build(Ok, AuthConstants.MSG_OK);
     }
 
@@ -380,24 +425,31 @@ public class AuthController {
                                  @RequestParam(name = "newPwd", required = true) String newPwd,
                                  @RequestParam(name = "version", required = false) String version) {
         BaseResult result = new BaseResult();
-        if (!jc.exists(actmd5)) {
-            result.setCode(StateCode.AUTH_ERROR_10012.getCode());
-            result.setDesc("Verify expired");
-            return result;
-        }
-        int id = Integer.parseInt(jc.get(actmd5));
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(id);
-        MD5 md5 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
-        userEntity.setPassword(md5.getMD5());
-        userEntity.setUpdate_time(new Date());
-        int updateUser = userDao.updateUser(userEntity);
-        if (updateUser > 0) {
-            //删除验证redis-key
-            jc.del(actmd5);
-            result.setCode(StateCode.Ok.getCode());
-            result.setDesc(AuthConstants.MSG_OK);
-            return result;
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/password/"+actmd5);
+            if (!jc.exists(actmd5)) {
+                result.setCode(StateCode.AUTH_ERROR_10012.getCode());
+                result.setDesc("Verify expired");
+                return result;
+            }
+            int id = Integer.parseInt(jc.get(actmd5));
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(id);
+            MD5 md5 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
+            userEntity.setPassword(md5.getMD5());
+            userEntity.setUpdate_time(new Date());
+            int updateUser = userDao.updateUser(userEntity);
+            if (updateUser > 0) {
+                //删除验证redis-key
+                jc.del(actmd5);
+                result.setCode(StateCode.Ok.getCode());
+                result.setDesc(AuthConstants.MSG_OK);
+                return result;
+            }
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
         result.setCode(StateCode.AUTH_ERROR_100.getCode());
         result.setDesc("unknown mistake");
@@ -413,12 +465,19 @@ public class AuthController {
     @RequestMapping(value = "/token/reset", method = RequestMethod.POST)
     public DataResult<Map> reset(@RequestParam(name = "token", required = true) String token, UserEntity userSession) {
         DataResult result = new DataResult();
-        jc.expire(token, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-        Map<String, String> map = new HashMap<>();
-        result.setCode(AuthConstants.OK);
-        result.setDesc(AuthConstants.MSG_OK);
-        map.put("token", token);
-        result.setData(map);
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/token/reset/"+token);
+            jc.expire(token, AuthConstants.AUTH_TOKEN_FAIL_TIME);
+            Map<String, String> map = new HashMap<>();
+            result.setCode(AuthConstants.OK);
+            result.setDesc(AuthConstants.MSG_OK);
+            map.put("token", token);
+            result.setData(map);
+        } catch (Exception e) {
+        } finally {
+            lock.release();
+        }
         return result;
     }
 
@@ -439,27 +498,34 @@ public class AuthController {
                                         @RequestParam(name = "version", required = false) String version,
                                         UserEntity userSession) {
         BaseResult result = new BaseResult();
-        UserEntity userEntity = new UserEntity();
-        userEntity.setId(userSession.getId());
-        UserEntity entity = userDao.queryUser(userEntity);
-        MD5 md5 = new MD5.Builder().source(oldPwd).salt(AuthConstants.USER_SALT).build();
-        if (entity.getPassword().equals(md5.getMD5())) {
-            MD5 md51 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
-            userEntity.setPassword(md51.getMD5());
-            userEntity.setUpdate_time(new Date());
-            int updateUser = userDao.updateUser(userEntity);
-            if (updateUser > 0) {
-                jc.del("token"+userSession.getId());
-                jc.del(token);
-                result.setCode(AuthConstants.OK);
-                result.setDesc(AuthConstants.MSG_OK);
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("auth/password/update/"+token);
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(userSession.getId());
+            UserEntity entity = userDao.queryUser(userEntity);
+            MD5 md5 = new MD5.Builder().source(oldPwd).salt(AuthConstants.USER_SALT).build();
+            if (entity.getPassword().equals(md5.getMD5())) {
+                MD5 md51 = new MD5.Builder().source(newPwd).salt(AuthConstants.USER_SALT).build();
+                userEntity.setPassword(md51.getMD5());
+                userEntity.setUpdate_time(new Date());
+                int updateUser = userDao.updateUser(userEntity);
+                if (updateUser > 0) {
+                    jc.del("token"+userSession.getId());
+                    jc.del(token);
+                    result.setCode(AuthConstants.OK);
+                    result.setDesc(AuthConstants.MSG_OK);
+                } else {
+                    result.setCode(StateCode.AUTH_ERROR_100.getCode());
+                    result.setDesc("unknown mistake");
+                }
             } else {
-                result.setCode(StateCode.AUTH_ERROR_100.getCode());
-                result.setDesc("unknown mistake");
+                result.setCode(StateCode.AUTH_ERROR_10003.getCode());
+                result.setDesc("Old password is incorrect");
             }
-        } else {
-            result.setCode(StateCode.AUTH_ERROR_10003.getCode());
-            result.setDesc("Old password is incorrect");
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
         return result;
     }
@@ -507,7 +573,9 @@ public class AuthController {
                 entity.setPassport(passportUrl);
             }
 
+        SyncLock lock = new SyncLock();
             try {
+                lock.acquire("auth/personal/save/"+token);
                 CertifiedEntity ce = certifiedService.queryByUserId(id,1);
                 if (Objects.isNull(ce)) {
                     certifiedService.savePersonal(entity);
@@ -521,6 +589,8 @@ public class AuthController {
             }catch (Exception e){
                 result.setCode(StateCode.Unknown.getCode());
                 result.setDesc("Unknown error");
+            }finally {
+                lock.release();
             }
         return result;
     }

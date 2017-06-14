@@ -2,6 +2,7 @@ package cn.getcube.develop.controller;
 
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.StateCode;
+import cn.getcube.develop.commons.zookeeper.SyncLock;
 import cn.getcube.develop.utils.BaseResult;
 import cn.getcube.develop.utils.RegexUtil;
 import cn.getcube.develop.utils.SendMSMUtils;
@@ -60,24 +61,31 @@ public class SMSsendController {
             result.setDesc("参数不合法！");
             return result;
         }
-        if (RegexUtil.checkMobile(phone)) {
-            Integer sendMessage = SendMSMUtils.postRequest(phone,null,type);
-            if(sendMessage == 200){
-                result.setCode(StateCode.Ok.getCode());
-                result.setDesc("短信发送成功！");
-            }else if(sendMessage == 501){
-                result.setCode(StateCode.AUTH_ERROR_9999.getCode());
-                result.setDesc("短信发送失败！");
-            }else if(sendMessage ==404){
-                result.setCode(StateCode.AUTH_ERROR_10013.getCode());
-                result.setDesc("短信发送太频繁");
-            }else {
-                result.setCode(StateCode.AUTH_ERROR_100.getCode());
-                result.setDesc("未知错误,请重试！");
+        SyncLock lock = new SyncLock();
+        try {
+            lock.acquire("sms/send/code/"+phone);
+            if (RegexUtil.checkMobile(phone)) {
+                Integer sendMessage = SendMSMUtils.postRequest(phone,null,type);
+                if(sendMessage == 200){
+                    result.setCode(StateCode.Ok.getCode());
+                    result.setDesc("短信发送成功！");
+                }else if(sendMessage == 501){
+                    result.setCode(StateCode.AUTH_ERROR_9999.getCode());
+                    result.setDesc("短信发送失败！");
+                }else if(sendMessage ==404){
+                    result.setCode(StateCode.AUTH_ERROR_10013.getCode());
+                    result.setDesc("短信发送太频繁");
+                }else {
+                    result.setCode(StateCode.AUTH_ERROR_100.getCode());
+                    result.setDesc("未知错误,请重试！");
+                }
+            } else {
+                result.setCode(StateCode.AUTH_ERROR_9998.getCode());
+                result.setDesc("手机号格式错误！");
             }
-        } else {
-            result.setCode(StateCode.AUTH_ERROR_9998.getCode());
-            result.setDesc("手机号格式错误！");
+        } catch (Exception e) {
+        } finally {
+            lock.release();
         }
         return  result;
     }
