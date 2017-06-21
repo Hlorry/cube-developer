@@ -28,40 +28,44 @@
     <import resource="classpath*:developesDatabase.xml" />
     <import resource="classpath*:cubeDatabase.xml" />
 
-
+    <!-- redis集群 -->
     <bean id="jedisCluster" class="redis.clients.jedis.JedisCluster">
         <constructor-arg index="0">
-        <set>
-        <bean class="redis.clients.jedis.HostAndPort">
-        <constructor-arg index="0" value="${redis.host}" />
-        <constructor-arg index="1" value="7000" type="int" />
-    </bean>
-        <bean class="redis.clients.jedis.HostAndPort">
-        <constructor-arg index="0" value="${redis.host}" />
-        <constructor-arg index="1" value="7001" type="int" />
-    </bean>
-        <bean class="redis.clients.jedis.HostAndPort">
-        <constructor-arg index="0" value="${redis.host}" />
-        <constructor-arg index="1" value="7002" type="int" />
-    </bean>
-        <bean class="redis.clients.jedis.HostAndPort">
-        <constructor-arg index="0" value="${redis.host}" />
-        <constructor-arg index="1" value="7003" type="int" />
-    </bean>
-        <bean class="redis.clients.jedis.HostAndPort">
-        <constructor-arg index="0" value="${redis.host}" />
-        <constructor-arg index="1" value="7004" type="int" />
-    </bean>
-        <bean class="redis.clients.jedis.HostAndPort">
-        <constructor-arg index="0" value="${redis.host}" />
-        <constructor-arg index="1" value="7005" type="int" />
-    </bean>
-    </set>
-    </constructor-arg>
-        <constructor-arg index="1" value="15000" type="int" />
-        <!--<constructor-arg index="2" ref="jedisPoolConfig" />-->
+            <set>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="114.112.101.156"/>
+                    <constructor-arg index="1" value="7000" type="int"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="114.112.101.156"/>
+                    <constructor-arg index="1" value="7001" type="int"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="114.112.101.157"/>
+                    <constructor-arg index="1" value="7002" type="int"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="114.112.101.157"/>
+                    <constructor-arg index="1" value="7003" type="int"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="103.6.222.234"/>
+                    <constructor-arg index="1" value="7006" type="int"/>
+                </bean>
+                <bean class="redis.clients.jedis.HostAndPort">
+                    <constructor-arg index="0" value="103.6.222.234"/>
+                    <constructor-arg index="1" value="7007" type="int"/>
+                </bean>
+            </set>
+        </constructor-arg>
+        <constructor-arg index="1" value="${redis.timeOut}"></constructor-arg>
+        <constructor-arg index="2" value="${redis.maxTotal}"></constructor-arg>
+        <constructor-arg index="3" value="${redis.maxConnctions}"></constructor-arg>
+        <constructor-arg index="4" value="${redis.pass}"></constructor-arg>
+        <constructor-arg index="5" ref="jedisPoolConfig"></constructor-arg>
     </bean>
 
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig"></bean>
 
     <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true"/>
 

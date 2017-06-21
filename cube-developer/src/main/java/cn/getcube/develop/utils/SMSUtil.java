@@ -1,16 +1,14 @@
 package cn.getcube.develop.utils;
 
 import cn.getcube.develop.utils.redis.RedisConnectionManager;
-import cube.sms.SMSServiceTest;
 import cube.sms.common.Result;
 import cube.sms.common.SMSBusinessName;
-import cube.sms.model.Policy;
 import cube.sms.model.SMSEntity;
 import cube.sms.model.SMSServiceName;
 import cube.sms.service.SMSPublicService;
 import cube.sms.service.SMSServiceManager;
+import redis.clients.jedis.JedisCluster;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**

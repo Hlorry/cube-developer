@@ -65,7 +65,7 @@ public class SMSsendController {
         try {
             lock.acquire("sms/send/code/"+phone);
             if (RegexUtil.checkMobile(phone)) {
-                Integer sendMessage = SendMSMUtils.postRequest(phone,null,type);
+                Integer sendMessage = SendMSMUtils.postRequest(phone,null,type,jc);
                 if(sendMessage == 200){
                     result.setCode(StateCode.Ok.getCode());
                     result.setDesc("短信发送成功！");

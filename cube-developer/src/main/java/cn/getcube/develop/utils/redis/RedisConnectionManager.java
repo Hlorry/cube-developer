@@ -18,10 +18,12 @@ import java.util.Set;
  */
 public class RedisConnectionManager {
 
+    private final static RedisConnectionManager instance = new RedisConnectionManager();
     private static BinaryJedisCluster binaryJedisCluster;
 
-    private final static RedisConnectionManager instance = new RedisConnectionManager();
-
+    public static RedisConnectionManager getInstance() {
+        return RedisConnectionManager.instance;
+    }
 
     public void startup(String ipAndPort) {
         Properties properties = new Properties();
@@ -29,6 +31,7 @@ public class RedisConnectionManager {
             properties.load(RedisConnectionManager.class.getClassLoader().getResourceAsStream("redis-config.properties"));
             Set<HostAndPort> jedisClusterNodes = new HashSet<>();
             String address = (!Objects.equals(ipAndPort, null) && !Objects.equals(ipAndPort, "")) ? ipAndPort : properties.getProperty("redis.cluster");
+            String pwd = properties.getProperty("redis.pwd");
             if (address.indexOf(" ") > -1) {
                 for (String str : address.split(" ")) {
                     String[] ipOrPort = str.split(":");
@@ -50,14 +53,14 @@ public class RedisConnectionManager {
             Integer MAX_TIMEOUT = Integer.parseInt(properties.getProperty("redis.timeOut"));
             Integer MAX_CONNECTIONS = Integer.parseInt(properties.getProperty("redis.maxConnctions"));
 
-            this.binaryJedisCluster = new BinaryJedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_CONNECTIONS, genericObjectPoolConfig);
+            if (Objects.isNull(pwd) || pwd.equals("")) {
+                this.binaryJedisCluster = new BinaryJedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_CONNECTIONS, genericObjectPoolConfig);
+            } else {
+                this.binaryJedisCluster = new BinaryJedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_TIMEOUT, MAX_CONNECTIONS, pwd, genericObjectPoolConfig);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static RedisConnectionManager getInstance() {
-        return RedisConnectionManager.instance;
     }
 
     public void close() {

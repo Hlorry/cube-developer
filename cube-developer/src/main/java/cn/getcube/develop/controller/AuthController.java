@@ -213,7 +213,7 @@ public class AuthController {
                 EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
                 return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
-                SendMSMUtils.postRequest(account,null,1);
+                SendMSMUtils.postRequest(account,null,1,jc);
                 return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else {
                 return BaseResult.build(StateCode.AUTH_ERROR_10021.getCode(), "帐号不存在");
@@ -265,10 +265,10 @@ public class AuthController {
                 String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
                 jc.set(md5, user.getId() + "");
                 jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-                EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5), account);
+                EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), account);
                 return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else {
-                int postRequest = SendMSMUtils.postRequest(account,null,4);
+                int postRequest = SendMSMUtils.postRequest(account,null,4,jc);
                 if (200==postRequest) {
                     return BaseResult.build(Ok, AuthConstants.MSG_OK);
                 } else {
@@ -317,7 +317,7 @@ public class AuthController {
             String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5+"_fix", userSession.getId() + "_"+email);
             jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5), email);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), email);
         } catch (Exception e) {
         } finally {
             lock.release();
@@ -363,7 +363,7 @@ public class AuthController {
             String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5+"_bind", userSession.getId() + "_"+email);
             jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5), email);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), email);
         } catch (Exception e) {
         } finally {
             lock.release();
@@ -403,7 +403,7 @@ public class AuthController {
             String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5+"_unbind", userSession.getId() + "_"+user.getEmail());
             jc.expire(md5+"_unbind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5), userSession.getEmail());
+            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), userSession.getEmail());
         } catch (Exception e) {
         } finally {
             lock.release();

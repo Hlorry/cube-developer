@@ -19,7 +19,7 @@ import static cn.getcube.develop.utils.SMSUtil.sned;
  * Created by Administrator on 2016/4/14.
  */
 public class SendMSMUtils {
-    static JedisCluster jc;
+    /*static JedisCluster jc;
 
     static {
         Set<HostAndPort> jedisClusterNodes = new HashSet<>();
@@ -31,14 +31,14 @@ public class SendMSMUtils {
         jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7005));
         jc = new JedisCluster(jedisClusterNodes);
     }
-
+*/
     /**
      * http Post 通用方法 Json传参
      *
      * @param message
      * @return
      */
-    public static int postRequest(String phone, String message,int type) {
+    public static int postRequest(String phone, String message,int type,JedisCluster jc) {
         try {
             //验证码
             String random = EmailUtils.getStringRandom(6);
