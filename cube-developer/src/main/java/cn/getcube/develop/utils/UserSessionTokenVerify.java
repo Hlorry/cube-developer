@@ -1,7 +1,9 @@
 package cn.getcube.develop.utils;
 
 import cn.getcube.develop.entity.UserEntity;
+import cn.getcube.develop.utils.redis.RedisConnectionManager;
 import com.alibaba.fastjson.JSONObject;
+import redis.clients.jedis.BinaryJedisCluster;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
@@ -20,18 +22,7 @@ import java.util.Set;
  */
 public class UserSessionTokenVerify {
 
-    static JedisCluster jc;
-
-    static {
-        Set<HostAndPort> jedisClusterNodes = new HashSet<>();
-        jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7000));
-        jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7001));
-        jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7002));
-        jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7003));
-        jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7004));
-        jedisClusterNodes.add(new HostAndPort("125.208.1.67", 7005));
-        jc = new JedisCluster(jedisClusterNodes);
-    }
+    private static JedisCluster jc = RedisConnectionManager.getJedisCluster();
 
     public static UserEntity get(String Token) {
         String userString = jc.get(Token);

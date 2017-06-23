@@ -1,5 +1,6 @@
 package cn.getcube.develop.main;
 
+import cn.getcube.develop.utils.redis.RedisConnectionManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.ImportResource;
 public class DevelopStartMain {
 
     public static void main(String[] args) {
+        RedisConnectionManager.getInstance().startup(null);
         SpringApplication.run(DevelopStartMain.class, args);
     }
 

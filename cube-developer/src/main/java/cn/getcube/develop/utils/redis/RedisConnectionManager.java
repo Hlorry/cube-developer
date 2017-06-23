@@ -3,6 +3,7 @@ package cn.getcube.develop.utils.redis;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.BinaryJedisCluster;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ public class RedisConnectionManager {
 
     private final static RedisConnectionManager instance = new RedisConnectionManager();
     private static BinaryJedisCluster binaryJedisCluster;
+    private static JedisCluster jedisCluster;
 
     public static RedisConnectionManager getInstance() {
         return RedisConnectionManager.instance;
@@ -55,8 +57,10 @@ public class RedisConnectionManager {
 
             if (Objects.isNull(pwd) || pwd.equals("")) {
                 this.binaryJedisCluster = new BinaryJedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_CONNECTIONS, genericObjectPoolConfig);
+                this.jedisCluster = new JedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_CONNECTIONS, genericObjectPoolConfig);
             } else {
                 this.binaryJedisCluster = new BinaryJedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_TIMEOUT, MAX_CONNECTIONS, pwd, genericObjectPoolConfig);
+                this.jedisCluster = new JedisCluster(jedisClusterNodes, MAX_TIMEOUT, MAX_TIMEOUT, MAX_CONNECTIONS, pwd, genericObjectPoolConfig);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -66,6 +70,7 @@ public class RedisConnectionManager {
     public void close() {
         try {
             binaryJedisCluster.close();
+            jedisCluster.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -73,5 +78,9 @@ public class RedisConnectionManager {
 
     public BinaryJedisCluster getBinaryJedisCluster() {
         return binaryJedisCluster;
+    }
+
+    public static JedisCluster getJedisCluster() {
+        return jedisCluster;
     }
 }
