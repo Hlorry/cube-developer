@@ -5,6 +5,7 @@ import cn.getcube.develop.EmailConstants;
 import cn.getcube.develop.HttpUriCode;
 import cn.getcube.develop.StateCode;
 import cn.getcube.develop.anaotation.TokenVerify;
+import cn.getcube.develop.commons.EmailHelper;
 import cn.getcube.develop.commons.zookeeper.SyncLock;
 import cn.getcube.develop.dao.developes.UserDao;
 import cn.getcube.develop.entity.CertifiedEntity;
@@ -210,7 +211,7 @@ public class AuthController {
                 jc.set(md5, user.getId() + "");
                 jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
                 //发送数据
-                EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
+                EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", EmailHelper.formatContent(EmailHelper.readContent(EmailConstants.registerTemplate), user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
                 return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else if (user != null && Objects.nonNull(userEntity.getPhone())) {
                 SendMSMUtils.postRequest(account,null,1,jc);
@@ -265,7 +266,7 @@ public class AuthController {
                 String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
                 jc.set(md5, user.getId() + "");
                 jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
-                EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.forgetTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), account);
+                EmailUtils.sendHtmlEmail("cube-开发者平台", EmailHelper.formatContent(EmailHelper.readContent(EmailConstants.forgetTemplate),account, HttpUriCode.HTTP_CODE_URI + "/auth/password/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5,EmailHelper.formatNow()), account);
                 return BaseResult.build(Ok, AuthConstants.MSG_OK);
             } else {
                 int postRequest = SendMSMUtils.postRequest(account,null,4,jc);
@@ -317,7 +318,7 @@ public class AuthController {
             String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5+"_fix", userSession.getId() + "_"+email);
             jc.expire(md5+"_fix", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.fixTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), email);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", EmailHelper.formatContent(EmailHelper.readContent(EmailConstants.fixTemplate),email, HttpUriCode.HTTP_CODE_URI + "/auth/fix/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), email);
         } catch (Exception e) {
         } finally {
             lock.release();
@@ -363,7 +364,7 @@ public class AuthController {
             String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5+"_bind", userSession.getId() + "_"+email);
             jc.expire(md5+"_bind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.bindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), email);
+            EmailUtils.sendHtmlEmail("cube-开发者平台", EmailHelper.formatContent(EmailHelper.readContent(EmailConstants.bindTemplate),email, HttpUriCode.HTTP_CODE_URI + "/auth/bind/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), email);
         } catch (Exception e) {
         } finally {
             lock.release();
@@ -403,7 +404,7 @@ public class AuthController {
             String md5 = Md5Helper.MD5.getMD5(System.currentTimeMillis()+"");
             jc.set(md5+"_unbind", userSession.getId() + "_"+user.getEmail());
             jc.expire(md5+"_unbind", AuthConstants.AUTH_TOKEN_FAIL_TIME);
-            EmailUtils.sendHtmlEmail("cube-开发者平台", String.format(EmailConstants.unbindTemplate, HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), userSession.getEmail());
+            EmailUtils.sendHtmlEmail("cube-开发者平台", EmailHelper.formatContent(EmailHelper.readContent(EmailConstants.unbindTemplate),userSession.getEmail() ,HttpUriCode.HTTP_CODE_URI + "/auth/unbind/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), userSession.getEmail());
         } catch (Exception e) {
         } finally {
             lock.release();

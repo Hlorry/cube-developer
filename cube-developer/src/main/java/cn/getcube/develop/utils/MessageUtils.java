@@ -3,6 +3,7 @@ package cn.getcube.develop.utils;
 import cn.getcube.develop.AuthConstants;
 import cn.getcube.develop.EmailConstants;
 import cn.getcube.develop.HttpUriCode;
+import cn.getcube.develop.commons.EmailHelper;
 import cn.getcube.develop.entity.UserEntity;
 import redis.clients.jedis.JedisCluster;
 
@@ -32,7 +33,7 @@ public class MessageUtils {
                 jc.set(md5, user.getId() + "");
                 jc.expire(md5, AuthConstants.AUTH_TOKEN_FAIL_TIME);
                 //发送数据
-                EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", String.format(EmailConstants.registerTemplate, user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
+                EmailUtils.sendHtmlEmail("cube-开发者平台-注册验证", EmailHelper.formatContent(EmailHelper.readContent(EmailConstants.registerTemplate), user.getName(), HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5,HttpUriCode.HTTP_CODE_URI + "/auth/email/activation?actmd5=" + md5), user.getEmail());
                 return true;
             } else {
                 return false;
