@@ -75,7 +75,7 @@ public class UserController {
                         if(db.getActivation()==1) {
                             return new DataResult<>(StateCode.AUTH_ERROR_10023.getCode(), AuthConstants.EMAIL_EXISTS);
                         }else if(db.getActivation()==0){
-                            return new DataResult<>(StateCode.AUTH_ERROR_10035.getCode(), "账号已注册过，请重新激活");
+                            return new DataResult<>(StateCode.AUTH_ERROR_9997.getCode(), "账号已注册过，请重新激活");
                         }
                     }
                 } else {
@@ -91,7 +91,7 @@ public class UserController {
                         if(db.getActivation()==1) {
                             return new DataResult<>(StateCode.AUTH_ERROR_10024.getCode(), AuthConstants.PHONE_EXISTS);
                         }else if(db!=null&&db.getActivation()==0){
-                            return new DataResult<>(StateCode.AUTH_ERROR_10035.getCode(), "账号已注册过，请重新激活");
+                            return new DataResult<>(StateCode.AUTH_ERROR_9997.getCode(), "账号已注册过，请重新激活");
                         }
                     }
                 }
@@ -294,42 +294,42 @@ public class UserController {
         return null;
     }
 
-    /**
-     * 重新激活账号接口
-     * @param account
-     * @param version
-     * @return
-     */
-    @RequestMapping(value = "/reactivation",method = RequestMethod.POST)
-    public BaseResult active(@RequestParam(name = "account", required = true) String account,
-                             @RequestParam(name = "version", required = false) String version) {
-        UserEntity userEntity = new UserEntity();
-        UserEntity db =null;
-        if (account.contains("@")) {
-            //邮箱验证
-            if (!RegexUtil.isEmail(account)) {
-                return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(), AuthConstants.FORMAT_ERROR);
-            }
-            userEntity.setEmail(account);
-            db = userService.queryExists(userEntity);
-        }else{
-            if (!RegexUtil.checkMobile(account)) {
-                return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(), AuthConstants.PHONE_FORMAT_ERROR);
-            }
-            userEntity.setPhone(account);
-            db = userService.queryExists(userEntity);
-        }
-        if(db!=null){
-            if(db.getActivation()==1){
-                return new DataResult<>(StateCode.AUTH_ERROR_10036, "账号已激活，无需再次激活");
-            }else{
-                MessageUtils.getInstance().sendEmailOrPhone(jc, account, db);
-                return new DataResult<>(StateCode.Ok, AuthConstants.MSG_OK);
-            }
-        }else{
-            return new DataResult<>(StateCode.AUTH_ERROR_10021, "激活账号不存在");
-        }
-    }
+//    /**
+//     * 重新激活账号接口
+//     * @param account
+//     * @param version
+//     * @return
+//     */
+//    @RequestMapping(value = "/reactivation",method = RequestMethod.POST)
+//    public BaseResult active(@RequestParam(name = "account", required = true) String account,
+//                             @RequestParam(name = "version", required = false) String version) {
+//        UserEntity userEntity = new UserEntity();
+//        UserEntity db =null;
+//        if (account.contains("@")) {
+//            //邮箱验证
+//            if (!RegexUtil.isEmail(account)) {
+//                return new DataResult<>(StateCode.AUTH_ERROR_10004.getCode(), AuthConstants.FORMAT_ERROR);
+//            }
+//            userEntity.setEmail(account);
+//            db = userService.queryExists(userEntity);
+//        }else{
+//            if (!RegexUtil.checkMobile(account)) {
+//                return new DataResult<>(StateCode.AUTH_ERROR_10022.getCode(), AuthConstants.PHONE_FORMAT_ERROR);
+//            }
+//            userEntity.setPhone(account);
+//            db = userService.queryExists(userEntity);
+//        }
+//        if(db!=null){
+//            if(db.getActivation()==1){
+//                return new DataResult<>(StateCode.AUTH_ERROR_10036, "账号已激活，无需再次激活");
+//            }else{
+//                MessageUtils.getInstance().sendEmailOrPhone(jc, account, db);
+//                return new DataResult<>(StateCode.Ok, AuthConstants.MSG_OK);
+//            }
+//        }else{
+//            return new DataResult<>(StateCode.AUTH_ERROR_10021, "激活账号不存在");
+//        }
+//    }
 
 
     /**
@@ -358,7 +358,7 @@ public class UserController {
                     if(null==db){
                         return new BaseResult(StateCode.AUTH_ERROR_10021,"用户不存在");
                     }else if(db.getActivation()==1){
-                        return new BaseResult(StateCode.AUTH_ERROR_10024,"手机号已被注册");
+                        return new BaseResult(StateCode.AUTH_ERROR_10036,"账号已激活，无需再次激活");
                     }
 
                     UserEntity userEntity = new UserEntity();
