@@ -215,8 +215,8 @@ public class EmailActivation {
             userEntity.setId(Integer.valueOf(value));
             userEntity.setUpdate_time(new Date());
             userEntity.setActivation(1);
-            int state = userDao.queryExists(userEntity);
-            if(state == 0){
+            UserEntity db = userDao.queryExists(userEntity);
+            if(db.getActivation() == 0){
                 int updateUser = userDao.updateUser(userEntity);
                 model.addAttribute("email", userDao.queryUser(userEntity).getEmail());
                 if (updateUser > 0) {

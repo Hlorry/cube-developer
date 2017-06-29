@@ -32,7 +32,7 @@ public interface UserService {
      */
     UserEntity queryUser(UserEntity userEntity);
 
-    int queryExists(UserEntity userEntity);
+    UserEntity queryExists(UserEntity userEntity);
 
     /**
      * 更新用户信息

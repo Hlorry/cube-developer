@@ -59,6 +59,9 @@ public enum StateCode {
 
     AUTH_ERROR_10034(10034),            //账号未激活
 
+    AUTH_ERROR_10035(10035),            //账号已注册过，请激活
+    AUTH_ERROR_10036(10036),            //账号已激活，无需再次激活
+
     Unknown(20001),                     //未知错误
     APP_NAME_EXIST(10088),              //应用名称已存在
     APP_CREATE_ERROR(10089),            //创建应用出错

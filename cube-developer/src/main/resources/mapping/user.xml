@@ -40,9 +40,9 @@
         </if>
     </select>
 
-    <select id="queryExists"  parameterType="userEntity" resultType="java.lang.Integer">
-        SELECT count(id) FROM
-        d_user_password WHERE activation = 1
+    <select id="queryExists"  parameterType="userEntity" resultType="userEntity">
+        SELECT * FROM
+        d_user_password WHERE 1=1
         <if test="id != null">
             and id = #{id}
         </if>

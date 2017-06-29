@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public int queryExists(UserEntity userEntity) {
+    public UserEntity queryExists(UserEntity userEntity) {
         return userDao.queryExists(userEntity);
     }
 
