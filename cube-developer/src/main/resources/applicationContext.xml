@@ -13,7 +13,7 @@
     <description>Spring public settings</description>
 
     <context:property-placeholder ignore-resource-not-found="true"
-                                  location="classpath:mysql.properties,classpath:redis.properties"/>
+                                  location="classpath:mysql.properties,classpath:redisdef.properties"/>
     <context:annotation-config/>
     <context:component-scan base-package="cn.getcube.develop.*"/>
 
@@ -27,6 +27,8 @@
 
     <import resource="classpath*:developesDatabase.xml" />
     <import resource="classpath*:cubeDatabase.xml" />
+
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig"></bean>
 
     <!-- redis集群 -->
     <bean id="jedisCluster" class="redis.clients.jedis.JedisCluster">
@@ -64,8 +66,6 @@
         <constructor-arg index="4" value="${redis.pass}"></constructor-arg>
         <constructor-arg index="5" ref="jedisPoolConfig"></constructor-arg>
     </bean>
-
-    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig"></bean>
 
     <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true"/>
 
