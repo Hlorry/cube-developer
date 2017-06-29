@@ -248,7 +248,7 @@ public class AppServiceImpl implements AppService {
             dataResult.setDesc("帐号认证审核中");
             return dataResult;
         }*/
-        Integer integer = appDao.updateEnvironment(appPara);
+        Integer integer = appDao.updateEnvironmentDe(appPara);
         if (integer == null) {
             dataResult.setCode(StateCode.APP_UPDATE_ENVIRONMENT_ERROR.getCode());
             dataResult.setDesc("update fail");

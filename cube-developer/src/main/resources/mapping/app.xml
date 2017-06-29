@@ -58,6 +58,10 @@
         update d_app set environment = #{environment},checkType=0 where appId = #{appId}
     </delete>
 
+    <update id="updateEnvironmentDe" parameterType="cn.getcube.develop.para.AppPara">
+        update d_app set environment = #{environment} where appId = #{appId}
+    </update>
+
     <select id="getAppinfoByAppid" parameterType="string" resultMap="appInfo">
     	select * from d_app where appid=#{appid}
     </select>

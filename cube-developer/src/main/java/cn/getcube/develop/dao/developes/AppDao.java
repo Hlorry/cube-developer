@@ -31,7 +31,9 @@ public interface AppDao {
     AppEntity isAppNameExitsByAppId(AppPara appPara);
 
     Integer updateEnvironment(AppPara appPara);
-    
+
+    Integer updateEnvironmentDe(AppPara appPara);
+
     AppInfo getAppinfoByAppid(String appid);
     
     //获取所有的测试环境的使用的cubeid
