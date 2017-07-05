@@ -78,6 +78,12 @@ public class SdkEntity {
      */
     private String downAll;
 
+    private String size;
+
+    public String getSize() { return size; }
+
+    public void setSize(String size) { this.size = size; }
+
     public Integer getId() { return id; }
 
     public void setId(Integer id) { this.id = id; }
