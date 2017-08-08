@@ -399,7 +399,6 @@
                 <version>3.3</version>
                 <configuration>
                     <fork>true</fork>
-                    <source>1.8</source>
                     <encoding>utf-8</encoding>
                 </configuration>
             </plugin>
