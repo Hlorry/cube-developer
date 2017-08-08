@@ -409,6 +409,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.5.5</version>
                 <configuration>
+                    <archiveBaseDirectory>${project.basedir}</archiveBaseDirectory>
                     <descriptors>
                         <descriptor>src/main/resources/assembly.xml</descriptor>
                     </descriptors>
