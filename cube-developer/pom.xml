@@ -373,14 +373,14 @@
             <artifactId>cube</artifactId>
             <version>1.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}\src\main\resources\lib\cube-sms-service-v1.1.jar</systemPath>
+            <systemPath>${project.basedir}/src/main/resources/lib/cube-sms-service-v1.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>aliyun-java-sdk-core</groupId>
             <artifactId>aliyun-java-sdk-core</artifactId>
             <version>2.4.2</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}\src\main\resources\lib\aliyun-java-sdk-core-2.4.2.jar</systemPath>
+            <systemPath>${project.basedir}/src/main/resources/lib/aliyun-java-sdk-core-2.4.2.jar</systemPath>
         </dependency>
 
     </dependencies>
